@@ -1408,74 +1408,29 @@ details[open] .faq-chevron { transform: rotate(180deg); }
      SCRIPTS
 ══════════════════════════════════ -->
 <script>
-/* ── Brand constants ── */
-const USD_TZS    = 2600;
-const SHIP_USD   = 10;
-const SVC_PCT    = 0.05;
-const DUTY_PCT   = 0.15;
+/* ═══════════════════════════════════════
+   JustBuy Frontend — Production
+   API: Netlify Functions
+═══════════════════════════════════════ */
 
-/* ── Demo catalogue ── */
-const DEMO = {
-  amazon:     { title:'Sony WH-1000XM5 Wireless Noise Canceling Headphones', price:279.99, emoji:'🎧', source:'Amazon.com',    scraped:true  },
-  aliexpress: { title:'Xiaomi Redmi Note 13 Pro 5G 256GB Global Version',      price:189.00, emoji:'📱', source:'AliExpress',    scraped:true  },
-  ebay:       { title:'Apple MacBook Air M2 13-inch 8GB 256GB SSD',            price:849.00, emoji:'💻', source:'eBay',          scraped:true  },
-  asos:       { title:'ASOS DESIGN Oversized Blazer in Stone',                  price:62.00,  emoji:'🧥', source:'ASOS',          scraped:true  },
-  zara:       { title:'Zara Flowing Midi Dress — Limited Edition',              price:59.90,  emoji:'👗', source:'Zara.com',      scraped:true  },
-  shein:      { title:'',                                                        price:null,   emoji:'🔒', source:'Shein',         scraped:false },
-  temu:       { title:'Portable Blender USB Rechargeable Mini Juicer',          price:18.99,  emoji:'🥤', source:'Temu',          scraped:true  },
-  default:    { title:'Wireless Mechanical Keyboard TKL RGB Backlit',           price:74.99,  emoji:'⌨️', source:'International', scraped:true  },
-};
+const FALLBACK_RATE = 2600;
 
-function detectSource(url) {
-  const u = url.toLowerCase();
-  if (u.includes('amazon'))     return 'amazon';
-  if (u.includes('aliexpress')) return 'aliexpress';
-  if (u.includes('ebay'))       return 'ebay';
-  if (u.includes('asos'))       return 'asos';
-  if (u.includes('zara'))       return 'zara';
-  if (u.includes('shein'))      return 'shein';
-  if (u.includes('temu'))       return 'temu';
-  return 'default';
-}
-
+/* ── Helpers ── */
+function $(id) { return document.getElementById(id); }
 function fmtTZS(n) { return 'TZS ' + Math.round(n).toLocaleString('en-TZ'); }
 function fmtUSD(n) { return 'USD ' + Number(n).toFixed(2); }
-function $(id)     { return document.getElementById(id); }
 
-function renderBreakdown(priceUSD, title, emoji, source, scraped) {
-  const itemTZS = priceUSD * USD_TZS;
-  const shipTZS = SHIP_USD * USD_TZS;
-  const svcTZS  = itemTZS * SVC_PCT;
-  const dutyTZS = itemTZS * DUTY_PCT;
-  const totTZS  = itemTZS + shipTZS + svcTZS + dutyTZS;
-  const totUSD  = totTZS / USD_TZS;
-
-  $('ppSource').textContent   = source;
-  $('ppName').textContent     = title || 'Product';
-  $('ppOrig').textContent     = 'Original price: ' + fmtUSD(priceUSD);
-  $('ppThumb').textContent    = emoji || '📦';
-  $('bkItemHint').textContent = fmtUSD(priceUSD) + ' × 2,600';
-  $('bkItem').textContent     = fmtTZS(itemTZS);
-  $('bkShipping').textContent = fmtTZS(shipTZS);
-  $('bkService').textContent  = fmtTZS(svcTZS);
-  $('bkCustoms').textContent  = fmtTZS(dutyTZS);
-  $('tbTZS').textContent      = fmtTZS(totTZS);
-  $('tbUSD').textContent      = '≈ ' + fmtUSD(totUSD);
-
-  $('fallback').classList.remove('active');
-  $('orderSection').style.display = scraped ? 'block' : 'none';
-
-  if (!scraped) {
-    $('ppName').textContent = 'Price could not be fetched automatically';
-    $('ppOrig').textContent = 'Enter the price below to calculate your estimate';
-    ['bkItem','bkShipping','bkService','bkCustoms','tbTZS','tbUSD'].forEach(id => $(id).textContent = '—');
-    $('fallback').classList.add('active');
-  }
-}
-
+/* ── Open result sheet + call scrape API ── */
 async function openSheet() {
   const url = $('urlInput').value.trim();
   if (!url) { $('urlInput').focus(); return; }
+
+  /* Validate URL before sending */
+  try { new URL(url); } catch {
+    $('urlInput').style.borderColor = '#EF4444';
+    setTimeout(() => $('urlInput').style.borderColor = '', 2000);
+    return;
+  }
 
   $('overlay').classList.add('open');
   $('stateLoading').classList.add('active');
@@ -1484,45 +1439,174 @@ async function openSheet() {
   $('orderSection').style.display = 'none';
   $('calcBtn').disabled = true;
 
-  await new Promise(r => setTimeout(r, 2200));
+  try {
+    const res = await fetch('/.netlify/functions/scrape', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ url }),
+    });
 
-  const prod = DEMO[detectSource(url)];
-  $('stateLoading').classList.remove('active');
-  $('stateResult').classList.add('active');
-  renderBreakdown(prod.price, prod.title, prod.emoji, prod.source, prod.scraped);
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    const data = await res.json();
+
+    $('stateLoading').classList.remove('active');
+    $('stateResult').classList.add('active');
+
+    if (data.scraped && data.breakdown) {
+      renderResult(data);
+    } else {
+      renderFallback(
+        data.source || new URL(url).hostname.replace('www.', ''),
+        data.title  || ''
+      );
+    }
+
+  } catch (err) {
+    console.error('[JustBuy] Scrape error:', err);
+    $('stateLoading').classList.remove('active');
+    $('stateResult').classList.add('active');
+    renderFallback('', '');
+  }
+
   $('calcBtn').disabled = false;
 }
 
+/* ── Render successful scrape result ── */
+function renderResult(data) {
+  const b = data.breakdown;
+
+  $('ppSource').textContent = data.source || '—';
+  $('ppName').textContent   = data.title  || 'Product';
+  $('ppOrig').textContent   = 'Original price: ' + fmtUSD(data.priceUSD);
+  $('ppThumb').textContent  = '📦';
+
+  /* Show product image if available */
+  if (data.image) {
+    const img     = document.createElement('img');
+    img.src       = data.image;
+    img.alt       = data.title || 'Product image';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:10px';
+    img.onerror   = () => { $('ppThumb').textContent = '📦'; };
+    $('ppThumb').innerHTML = '';
+    $('ppThumb').appendChild(img);
+  }
+
+  $('bkItemHint').textContent = fmtUSD(data.priceUSD) + ' × ' + Math.round(data.rate);
+  $('bkItem').textContent     = fmtTZS(b.itemTZS);
+  $('bkShipping').textContent = fmtTZS(b.shippingTZS);
+  $('bkService').textContent  = fmtTZS(b.serviceTZS);
+  $('bkCustoms').textContent  = fmtTZS(b.dutyTZS);
+  $('tbTZS').textContent      = fmtTZS(b.totalTZS);
+  $('tbUSD').textContent      = '≈ ' + fmtUSD(b.totalUSD);
+
+  $('fallback').classList.remove('active');
+  $('orderSection').style.display = 'block';
+
+  /* Store order context for submission */
+  window._order = {
+    productTitle: data.title  || '',
+    productUrl:   $('urlInput').value.trim(),
+    totalTZS:     b.totalTZS,
+    priceUSD:     data.priceUSD,
+  };
+}
+
+/* ── Render fallback (price not detected) ── */
+function renderFallback(source, title) {
+  $('ppSource').textContent = source || 'Unknown store';
+  $('ppName').textContent   = title  || 'Price could not be fetched automatically';
+  $('ppOrig').textContent   = 'Enter the price below to get your estimate';
+  $('ppThumb').textContent  = '🔒';
+
+  ['bkItem','bkShipping','bkService','bkCustoms','tbTZS','tbUSD']
+    .forEach(id => $(id).textContent = '—');
+  $('bkItemHint').textContent = '—';
+  $('fallback').classList.add('active');
+  $('orderSection').style.display = 'none';
+}
+
+/* ── Manual price entry ── */
 function applyManual() {
   const name  = $('manualName').value.trim();
   const price = parseFloat($('manualPrice').value);
   if (!name || isNaN(price) || price <= 0) { $('manualName').focus(); return; }
-  renderBreakdown(price, name, '📦', 'Manual entry', true);
+
+  const rate        = FALLBACK_RATE;
+  const itemTZS     = price * rate;
+  const shippingTZS = 10 * rate;
+  const serviceTZS  = itemTZS * 0.05;
+  const dutyTZS     = itemTZS * 0.15;
+  const totalTZS    = itemTZS + shippingTZS + serviceTZS + dutyTZS;
+
+  const fakeData = {
+    scraped:  true,
+    title:    name,
+    source:   'Manual entry',
+    priceUSD: price,
+    rate,
+    breakdown: {
+      itemTZS:     Math.round(itemTZS),
+      shippingTZS: Math.round(shippingTZS),
+      serviceTZS:  Math.round(serviceTZS),
+      dutyTZS:     Math.round(dutyTZS),
+      totalTZS:    Math.round(totalTZS),
+      totalUSD:    Math.round(totalTZS / rate * 100) / 100,
+    }
+  };
+  renderResult(fakeData);
 }
 
-function submitOrder() {
+/* ── Submit order → Netlify Function ── */
+async function submitOrder() {
   const name  = $('orderName').value.trim();
   const phone = $('orderPhone').value.trim();
   if (!name || !phone) { $('orderName').focus(); return; }
+
+  const order = window._order || {};
+
+  try {
+    await fetch('/.netlify/functions/order', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        phone,
+        productTitle: order.productTitle || 'Unknown product',
+        productUrl:   order.productUrl   || '',
+        totalTZS:     order.totalTZS     || 0,
+        priceUSD:     order.priceUSD     || 0,
+      }),
+    });
+  } catch (err) {
+    console.error('[JustBuy] Order error:', err);
+  }
+
   $('orderSection').style.display = 'none';
   $('successBanner').classList.add('active');
 }
 
+/* ── Close sheet ── */
 function closeSheet() {
   $('overlay').classList.remove('open');
 }
 
-$('overlay').addEventListener('click', e => { if (e.target === $('overlay')) closeSheet(); });
-$('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') openSheet(); });
+/* ── Event listeners ── */
+$('overlay').addEventListener('click', e => {
+  if (e.target === $('overlay')) closeSheet();
+});
+
+$('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') openSheet();
+});
 
 /* ── Mobile nav ── */
-$('hamburger').addEventListener('click', function() {
+$('hamburger').addEventListener('click', function () {
   const nav  = $('mobileNav');
   const open = nav.classList.toggle('open');
   this.setAttribute('aria-expanded', open);
 });
 
-/* ── Smooth anchors ── */
+/* ── Smooth anchor links ── */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const id = a.getAttribute('href').slice(1);
@@ -1532,26 +1616,22 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* ── Typewriter ── */
-const STORES    = ['Amazon', 'eBay', 'ASOS', 'AliExpress', 'Zara', 'Shein', 'Temu', 'Noon'];
-const TYPE_MS   = 80;
-const DEL_MS    = 42;
-const P_TYPED   = 22;
-const P_DEL     = 4;
+/* ── Typewriter effect ── */
+const STORES  = ['Amazon', 'eBay', 'ASOS', 'AliExpress', 'Zara', 'Shein', 'Temu', 'Noon'];
 let sIdx = 0, cIdx = 0, deleting = false, pause = 0;
 const storeEl = $('storeLabel');
 
 (function tick() {
   const word = STORES[sIdx];
-  if (pause > 0) { pause--; setTimeout(tick, deleting ? DEL_MS : TYPE_MS); return; }
+  if (pause > 0) { pause--; setTimeout(tick, deleting ? 42 : 80); return; }
   if (deleting) {
     storeEl.textContent = word.slice(0, --cIdx);
-    if (cIdx === 0) { deleting = false; sIdx = (sIdx + 1) % STORES.length; pause = P_DEL; }
+    if (cIdx === 0) { deleting = false; sIdx = (sIdx + 1) % STORES.length; pause = 4; }
   } else {
     storeEl.textContent = word.slice(0, ++cIdx);
-    if (cIdx === word.length) { deleting = true; pause = P_TYPED; }
+    if (cIdx === word.length) { deleting = true; pause = 22; }
   }
-  setTimeout(tick, deleting ? DEL_MS : TYPE_MS);
+  setTimeout(tick, deleting ? 42 : 80);
 })();
 </script>
 </body>
