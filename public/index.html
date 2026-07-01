@@ -800,6 +800,68 @@ details[open] .faq-chevron { transform: rotate(180deg); }
   }
   .type-cursor { animation: none; opacity: 1; }
 }
+
+/* ════════════════════════════════════════
+   STORE LOGOS GRID
+════════════════════════════════════════ */
+.store-logos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  max-width: var(--max-w); margin: 0 auto;
+  border: 1px solid var(--ink-12);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.store-logo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 2rem 1.5rem;
+  background: var(--white);
+  border-right: 1px solid var(--ink-12);
+  border-bottom: 1px solid var(--ink-12);
+  flex: 1 1 180px;
+  min-width: 160px;
+  transition: background var(--t-micro);
+}
+.store-logo-card:hover { background: var(--cloud); }
+.store-logo-card svg { opacity: 0.75; transition: opacity var(--t-micro); }
+.store-logo-card:hover svg { opacity: 1; }
+.store-logo-cat {
+  font-size: 11px; color: var(--ink-30);
+  text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500;
+}
+
+/* ════════════════════════════════════════
+   LANGUAGE TOGGLE
+════════════════════════════════════════ */
+.lang-toggle {
+  display: flex; align-items: center;
+  background: var(--cloud);
+  border: 1px solid var(--ink-12);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  gap: 2px;
+}
+.lang-btn {
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none;
+  background: transparent;
+  color: var(--ink-60);
+  transition: background var(--t-micro), color var(--t-micro);
+}
+.lang-btn.active {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
 </style>
 </head>
 <body>
@@ -818,16 +880,20 @@ details[open] .faq-chevron { transform: rotate(180deg); }
       <text x="218" y="83" font-family="'Plus Jakarta Sans','Inter',Arial,sans-serif" font-weight="800" font-size="54" fill="#4BAEE8">Buy</text>
     </svg></a>
       <ul class="nav-links">
-        <li><a href="#how-it-works">How it works</a></li>
-        <li><a href="#stores">Stores</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="#track">Track order</a></li>
+        <li><a href="#how-it-works"><span data-en="How it works" data-sw="Jinsi inavyofanya kazi">How it works</span></a></li>
+        <li><a href="#stores"><span data-en="Stores" data-sw="Maduka">Stores</span></a></li>
+        <li><a href="#faq"><span data-en="FAQ" data-sw="Maswali">FAQ</span></a></li>
+        <li><a href="#track"><span data-en="Track order" data-sw="Fuatilia agizo">Track order</span></a></li>
       </ul>
       <div class="nav-right">
         <a href="https://wa.me/255700000000" class="nav-wa" aria-label="Chat with us on WhatsApp">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.851L0 24l6.335-1.503C8.05 23.445 9.99 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.89 0-3.66-.49-5.2-1.351l-.373-.214-3.861.914.977-3.767-.236-.386A9.937 9.937 0 0 1 2 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/></svg>
           WhatsApp us
         </a>
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" id="btnSW" onclick="setLang('sw')">SW</button>
+        </div>
         <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
@@ -835,10 +901,10 @@ details[open] .faq-chevron { transform: rotate(180deg); }
     </div>
   </nav>
   <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
-    <a href="#how-it-works">How it works</a>
-    <a href="#stores">Stores</a>
-    <a href="#faq">FAQ</a>
-    <a href="#track">Track order</a>
+    <a href="#how-it-works"><span data-en="How it works" data-sw="Jinsi inavyofanya kazi">How it works</span></a>
+    <a href="#stores"><span data-en="Stores" data-sw="Maduka">Stores</span></a>
+    <a href="#faq"><span data-en="FAQ" data-sw="Maswali">FAQ</span></a>
+    <a href="#track"><span data-en="Track order" data-sw="Fuatilia agizo">Track order</span></a>
     <a href="https://wa.me/255700000000">WhatsApp us</a>
   </nav>
 </header>
@@ -847,23 +913,18 @@ details[open] .faq-chevron { transform: rotate(180deg); }
      HERO
 ══════════════════════════════════ -->
 <section class="hero" aria-labelledby="hero-h1">
-  <div class="hero-eyebrow">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-    🇹🇿 Tanzania's international shopping service
-  </div>
-
   <h1 class="hero-h1" id="hero-h1">
-    <span class="hero-h1-line">Order from</span>
+    <span class="hero-h1-line" data-en="Order from" data-sw="Agiza kutoka">Order from</span>
     <span class="hero-h1-line">
       <span class="store-wrap" aria-live="polite">
         <span class="store-text" id="storeLabel" aria-atomic="true"></span><span class="type-cursor" aria-hidden="true"></span>
       </span>
     </span>
-    <span class="hero-h1-line">straight to your doorstep.</span>
+    <span class="hero-h1-line" data-en="straight to your doorstep." data-sw="hadi mlangoni mwako.">straight to your doorstep.</span>
   </h1>
 
   <p class="hero-sub">
-    Paste any product link — we calculate your full landed cost to Tanzania, then handle purchase, customs &amp; delivery. No surprises.
+    <span data-en="Paste any product link — we calculate your full landed cost to Tanzania, then handle purchase, customs &amp; delivery. No surprises." data-sw="Bandika kiungo chochote cha bidhaa — tutahesabu gharama yako kamili hadi Tanzania, kisha tunaendesha ununuzi, forodha na uwasilishaji. Bila mshangao.">Paste any product link — we calculate your full landed cost to Tanzania, then handle purchase, customs &amp; delivery. No surprises.</span>
   </p>
 
   <div class="hero-search">
@@ -877,7 +938,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
         id="urlInput"
         class="search-input"
         type="url"
-        placeholder="Paste Amazon, ASOS, AliExpress, Zara... link here"
+        placeholder="Paste Amazon, ASOS, AliExpress, Zara... link here" data-en-placeholder="Paste Amazon, ASOS, AliExpress, Zara... link here" data-sw-placeholder="Bandika kiungo cha Amazon, ASOS, AliExpress, Zara..."
         autocomplete="off"
         spellcheck="false"
       />
@@ -898,25 +959,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
     </div>
   </div>
 
-  <div class="hero-stats" aria-label="Service stats">
-    <div>
-      <div class="stat-val">2,400+</div>
-      <div class="stat-lbl">Orders delivered</div>
-    </div>
-    <div>
-      <div class="stat-val">40+</div>
-      <div class="stat-lbl">Stores supported</div>
-    </div>
-    <div>
-      <div class="stat-val">7–14</div>
-      <div class="stat-lbl">Days avg. delivery</div>
-    </div>
-    <div>
-      <div class="stat-val">4.8★</div>
-      <div class="stat-lbl">Customer rating</div>
-    </div>
-  </div>
-</section>
+  </section>
 
 <!-- ══════════════════════════════════
      TRUST BAR
@@ -945,8 +988,8 @@ details[open] .faq-chevron { transform: rotate(180deg); }
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         How it works
       </div>
-      <h2 class="section-title" id="how-title">Three steps from browse to door</h2>
-      <p class="section-sub">No foreign card, no courier account, no customs headache. JustBuy absorbs the hard parts so you don't have to.</p>
+      <h2 class="section-title" id="how-title"><span data-en="Three steps from browse to door" data-sw="Hatua tatu kutoka kuvinjari hadi mlangoni">Three steps from browse to door</span></h2>
+      <p class="section-sub"><span data-en="No foreign card, no courier account, no customs headache. JustBuy absorbs the hard parts so you don't have to." data-sw="Hakuna kadi ya kigeni, hakuna akaunti ya courier, hakuna maumivu ya forodha. JustBuy inashughulikia mambo magumu kwako.">No foreign card, no courier account, no customs headache. JustBuy absorbs the hard parts so you don't have to.</span></p>
     </div>
     <div class="steps-grid">
       <div class="step">
@@ -954,7 +997,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
         <div class="step-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         </div>
-        <h3>Paste your link</h3>
+        <h3><span data-en="Paste your link" data-sw="Bandika kiungo chako">Paste your link</span></h3>
         <p>Find the product you want on Amazon, ASOS, AliExpress, Zara — anywhere. Copy the URL and paste it into JustBuy's calculator.</p>
       </div>
       <div class="step">
@@ -962,7 +1005,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
         <div class="step-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <h3>See your full cost in TZS</h3>
+        <h3><span data-en="See your full cost in TZS" data-sw="Ona gharama yako yote kwa TZS">See your full cost in TZS</span></h3>
         <p>We calculate shipping, service fee and estimated customs duty — giving you one clear total before you commit. No hidden charges.</p>
       </div>
       <div class="step">
@@ -970,121 +1013,14 @@ details[open] .faq-chevron { transform: rotate(180deg); }
         <div class="step-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 5.49 5.49l1.19-1.19a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.21 15c.006.64.006 1.28 0 1.92z"/></svg>
         </div>
-        <h3>Confirm via WhatsApp</h3>
+        <h3><span data-en="Confirm via WhatsApp" data-sw="Thibitisha kupitia WhatsApp">Confirm via WhatsApp</span></h3>
         <p>Share your number, confirm on WhatsApp, and pay via M-Pesa or bank transfer. We buy it, ship it, clear customs and deliver.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════
-     CALCULATOR FEATURE
-══════════════════════════════════ -->
-<section class="section section-bg-cloud" aria-labelledby="calc-title">
-  <div class="container">
-    <div class="feature-grid">
-      <!-- Live cost card mockup -->
-      <div class="cost-card" role="img" aria-label="Sample cost breakdown: Sony headphones from Amazon">
-        <div class="cost-card-header">
-          <span class="wm-dot r" aria-hidden="true"></span>
-          <span class="wm-dot a" aria-hidden="true"></span>
-          <span class="wm-dot g" aria-hidden="true"></span>
-          <span class="cost-card-label">JustBuy cost breakdown</span>
-        </div>
-        <div class="cost-card-body">
-          <div class="cc-product">
-            <div class="cc-thumb" aria-hidden="true">🎧</div>
-            <div>
-              <div class="cc-source">Amazon.com</div>
-              <div class="cc-name">Sony WH-1000XM5 Wireless Noise Canceling Headphones</div>
-              <div class="cc-orig">Original price: USD 279.99</div>
-            </div>
-          </div>
-          <div class="cc-row">
-            <div class="cc-left">
-              <div class="cc-ico ico-sky"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
-              <div><div class="cc-row-name">Item price</div><div class="cc-row-hint">USD 279.99 × 2,600</div></div>
-            </div>
-            <div class="cc-val">TZS 727,974</div>
-          </div>
-          <div class="cc-row">
-            <div class="cc-left">
-              <div class="cc-ico ico-org"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
-              <div><div class="cc-row-name">International shipping</div><div class="cc-row-hint">Est. ~1 kg air freight</div></div>
-            </div>
-            <div class="cc-val">TZS 26,000</div>
-          </div>
-          <div class="cc-row">
-            <div class="cc-left">
-              <div class="cc-ico ico-sky"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-              <div><div class="cc-row-name">JustBuy service fee</div><div class="cc-row-hint">5% of item price</div></div>
-            </div>
-            <div class="cc-val">TZS 36,399</div>
-          </div>
-          <div class="cc-row">
-            <div class="cc-left">
-              <div class="cc-ico ico-red"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-              <div><div class="cc-row-name">Estimated customs duty</div><div class="cc-row-hint">~15% import estimate</div></div>
-            </div>
-            <div class="cc-val">TZS 109,196</div>
-          </div>
-          <div class="cc-total">
-            <div>
-              <div class="cct-lbl">Total landed cost</div>
-              <div class="cct-name">To your door in Tanzania</div>
-            </div>
-            <div>
-              <div class="cct-tzs">TZS 899,569</div>
-              <div class="cct-usd">≈ USD 346.00</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Copy -->
-      <div class="feature-copy">
-        <div class="eyebrow">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Transparent pricing
-        </div>
-        <h2 class="section-title" id="calc-title">Your order cleared customs.<br>Next stop: your door.</h2>
-        <p class="section-sub">Most import services only quote the item price. JustBuy gives you the real number — what you actually pay, all-in, before you say yes.</p>
-        <ul class="feature-bullets">
-          <li class="feature-bullet">
-            <div class="fb-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <div class="fb-text">
-              <strong>Live exchange rate</strong>
-              <span>Real-time USD → TZS conversion so your quote is always current, not a stale estimate.</span>
-            </div>
-          </li>
-          <li class="feature-bullet">
-            <div class="fb-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            </div>
-            <div class="fb-text">
-              <strong>Shipping by weight</strong>
-              <span>Air freight is billed per kg. We estimate by product category and show you what to expect.</span>
-            </div>
-          </li>
-          <li class="feature-bullet">
-            <div class="fb-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </div>
-            <div class="fb-text">
-              <strong>Customs pre-calculated</strong>
-              <span>Tanzania's import duty varies by category. We apply a conservative estimate so you're never caught short at the border.</span>
-            </div>
-          </li>
-        </ul>
-        <button class="btn btn-primary" onclick="document.getElementById('urlInput').focus(); scrollTo({top:0,behavior:'smooth'})">
-          Calculate my order &rarr;
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ══════════════════════════════════
      STORES
@@ -1094,65 +1030,53 @@ details[open] .faq-chevron { transform: rotate(180deg); }
     <div class="section-head">
       <div class="eyebrow">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        Supported stores
+        <span data-en="Supported stores" data-sw="Maduka yanayotumika">Supported stores</span>
       </div>
-      <h2 class="section-title" id="stores-title">Shop global, arrive local.</h2>
-      <p class="section-sub">If you can browse it, we can order it. Here are the most popular stores our customers love.</p>
+      <h2 class="section-title" id="stores-title" data-en="Shop global, arrive local." data-sw="Nunua duniani, pokea Tanzania.">Shop global, arrive local.</h2>
+      <p class="section-sub" data-en="If you can browse it, we can order it." data-sw="Ukiweza kuivinjari, tunaweza kuiagiza.">If you can browse it, we can order it.</p>
     </div>
-    <div class="stores-grid">
-      <div class="store-card"><div class="store-emoji">📦</div><div class="store-name">Amazon</div><div class="store-cat">Everything</div></div>
-      <div class="store-card"><div class="store-emoji">🛍️</div><div class="store-name">AliExpress</div><div class="store-cat">Electronics &amp; more</div></div>
-      <div class="store-card"><div class="store-emoji">🔨</div><div class="store-name">eBay</div><div class="store-cat">New &amp; used</div></div>
-      <div class="store-card"><div class="store-emoji">👗</div><div class="store-name">ASOS</div><div class="store-cat">Fashion</div></div>
-      <div class="store-card"><div class="store-emoji">👠</div><div class="store-name">Zara</div><div class="store-cat">Fashion</div></div>
-      <div class="store-card"><div class="store-emoji">✨</div><div class="store-name">Shein</div><div class="store-cat">Trendy fashion</div></div>
-      <div class="store-card"><div class="store-emoji">🏷️</div><div class="store-name">Temu</div><div class="store-cat">Budget deals</div></div>
-      <div class="store-card"><div class="store-emoji">💻</div><div class="store-name">Noon</div><div class="store-cat">Electronics</div></div>
-      <div class="store-card"><div class="store-emoji">🌍</div><div class="store-name">Others</div><div class="store-cat">Just paste the link</div></div>
+    <div class="store-logos-grid">
+      <div class="store-logo-card">
+        <svg viewBox="0 0 120 40" width="100" height="40" aria-label="Amazon"><text x="2" y="30" font-family="Arial,sans-serif" font-weight="900" font-size="30" fill="#1a1a1a" letter-spacing="-1">amazon</text><path d="M6 36 Q52 48 98 36" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/><path d="M93 32 L100 36 L94 40" fill="#1a1a1a"/></svg>
+        <div class="store-logo-cat" data-en="Everything" data-sw="Kila kitu">Everything</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 130 40" width="110" height="40" aria-label="AliExpress"><text x="2" y="30" font-family="Arial,sans-serif" font-weight="700" font-size="26" fill="#1a1a1a">AliExpress</text></svg>
+        <div class="store-logo-cat" data-en="Electronics &amp; more" data-sw="Elektroniki na zaidi">Electronics &amp; more</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 90 40" width="80" height="40" aria-label="eBay"><text x="2" y="34" font-family="Georgia,serif" font-weight="900" font-size="36" fill="#1a1a1a">ebay</text></svg>
+        <div class="store-logo-cat" data-en="New &amp; used" data-sw="Mpya na kutumika">New &amp; used</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 90 40" width="80" height="40" aria-label="ASOS"><text x="2" y="30" font-family="Arial,sans-serif" font-weight="900" font-size="30" fill="#1a1a1a" letter-spacing="2">ASOS</text></svg>
+        <div class="store-logo-cat" data-en="Fashion" data-sw="Mitindo">Fashion</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 100 40" width="85" height="40" aria-label="Zara"><text x="2" y="32" font-family="Arial,sans-serif" font-weight="900" font-size="34" fill="#1a1a1a" letter-spacing="3">ZARA</text></svg>
+        <div class="store-logo-cat" data-en="Fashion" data-sw="Mitindo">Fashion</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 110 40" width="95" height="40" aria-label="Shein"><text x="2" y="30" font-family="Arial,sans-serif" font-weight="900" font-size="28" fill="#1a1a1a" letter-spacing="1">SHEIN</text></svg>
+        <div class="store-logo-cat" data-en="Trendy fashion" data-sw="Mitindo ya kisasa">Trendy fashion</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 90 40" width="75" height="40" aria-label="Shopee"><rect width="88" height="40" rx="6" fill="none" stroke="#1a1a1a" stroke-width="2"/><text x="44" y="27" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="18" fill="#1a1a1a">Shopee</text></svg>
+        <div class="store-logo-cat" data-en="Asian deals" data-sw="Bidhaa za Asia">Asian deals</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 110 40" width="95" height="40" aria-label="Trendyol"><text x="2" y="28" font-family="Arial,sans-serif" font-weight="700" font-size="22" fill="#1a1a1a">trendyol</text><circle cx="98" cy="10" r="6" fill="#1a1a1a"/></svg>
+        <div class="store-logo-cat" data-en="Turkish fashion" data-sw="Mitindo ya Uturuki">Turkish fashion</div>
+      </div>
+      <div class="store-logo-card">
+        <svg viewBox="0 0 100 40" width="85" height="40" aria-label="Adidas"><path d="M8 38 L28 6 L33 6 L13 38 Z" fill="#1a1a1a"/><path d="M20 38 L40 6 L45 6 L25 38 Z" fill="#1a1a1a"/><path d="M32 38 L52 6 L57 6 L37 38 Z" fill="#1a1a1a"/></svg>
+        <div class="store-logo-cat" data-en="Sports &amp; lifestyle" data-sw="Michezo na mtindo">Sports &amp; lifestyle</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════
-     TESTIMONIALS
-══════════════════════════════════ -->
-<section class="section section-bg-cloud" aria-labelledby="reviews-title">
-  <div class="container">
-    <div class="section-head">
-      <div class="eyebrow">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Customer reviews
-      </div>
-      <h2 class="section-title" id="reviews-title">Tanzanians love JustBuy</h2>
-    </div>
-    <div class="reviews-grid">
-      <article class="review-card">
-        <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-        <p class="review-text">"I ordered Sony headphones from Amazon for the first time. JustBuy showed me the exact total in TZS before I paid — no surprises. Arrived in 11 days."</p>
-        <div class="review-author">
-          <div class="review-avatar" style="background:var(--mist);color:var(--sky);" aria-hidden="true">AM</div>
-          <div><div class="review-name">Amina Mwangi</div><div class="review-loc">Dar es Salaam</div></div>
-        </div>
-      </article>
-      <article class="review-card">
-        <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-        <p class="review-text">"Ordered a PS5 controller and a Bluetooth speaker from eBay. Both arrived well packaged. The WhatsApp updates kept me informed the whole way through."</p>
-        <div class="review-author">
-          <div class="review-avatar" style="background:#ECFDF5;color:#059669;" aria-hidden="true">JK</div>
-          <div><div class="review-name">James Kioko</div><div class="review-loc">Arusha</div></div>
-        </div>
-      </article>
-      <article class="review-card">
-        <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-        <p class="review-text">"Finally I can shop ASOS without worrying about customs. JustBuy's estimate was spot on. My dress arrived looking exactly like the listing. Will use again."</p>
-        <div class="review-author">
-          <div class="review-avatar" style="background:#FEF3C7;color:#D97706;" aria-hidden="true">FN</div>
-          <div><div class="review-name">Fatuma Nkosi</div><div class="review-loc">Mwanza</div></div>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
+
 
 <!-- ══════════════════════════════════
      FAQ
@@ -1164,7 +1088,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Common questions
       </div>
-      <h2 class="section-title" id="faq-title">Everything you need to know</h2>
+      <h2 class="section-title" id="faq-title"><span data-en="Everything you need to know" data-sw="Kila unachohitaji kujua">Everything you need to know</span></h2>
     </div>
     <div class="faq-wrap">
       <div class="faq-item">
@@ -1223,8 +1147,8 @@ details[open] .faq-chevron { transform: rotate(180deg); }
      CTA BAND
 ══════════════════════════════════ -->
 <section class="cta-band" aria-labelledby="cta-title">
-  <h2 id="cta-title">Amazon is now open<br>for <em>Tanzania.</em></h2>
-  <p>Join thousands of Tanzanians who shop globally without the stress. Paste your link and get your full cost in 30 seconds.</p>
+  <h2 id="cta-title"><span data-en="Amazon is now open" data-sw="Amazon sasa imefunguka">Amazon is now open</span><br>for <em><span data-en="Tanzania." data-sw="Tanzania.">Tanzania.</span></em></h2>
+  <p><span data-en="Join thousands of Tanzanians who shop globally without the stress. Paste your link and get your full cost in 30 seconds." data-sw="Jiunge na maelfu ya Watanzania wanaonunua duniani bila msongo. Bandika kiungo chako na upate gharama yako yote kwa sekunde 30.">Join thousands of Tanzanians who shop globally without the stress. Paste your link and get your full cost in 30 seconds.</span></p>
   <div class="cta-buttons">
     <button class="btn btn-primary btn-sm" style="padding:13px 28px;font-size:15px;" onclick="document.getElementById('urlInput').focus(); scrollTo({top:0,behavior:'smooth'})">
       Calculate my cost &rarr;
@@ -1254,9 +1178,9 @@ details[open] .faq-chevron { transform: rotate(180deg); }
     <div class="footer-col">
       <h4>Service</h4>
       <ul>
-        <li><a href="#">How it works</a></li>
+        <li><a href="#"><span data-en="How it works" data-sw="Jinsi inavyofanya kazi">How it works</span></a></li>
         <li><a href="#">Cost calculator</a></li>
-        <li><a href="#" id="track">Track order</a></li>
+        <li><a href="#" id="track"><span data-en="Track order" data-sw="Fuatilia agizo">Track order</span></a></li>
         <li><a href="#">Supported stores</a></li>
       </ul>
     </div>
@@ -1295,14 +1219,14 @@ details[open] .faq-chevron { transform: rotate(180deg); }
     <!-- Loading -->
     <div class="state-loading" id="stateLoading" aria-live="polite" aria-label="Loading product information">
       <div class="spinner" role="status" aria-label="Loading"></div>
-      <div class="loading-title">Analyzing your link…</div>
-      <div class="loading-sub">Fetching product details, live price,<br>and calculating your Tanzania landed cost.</div>
+      <div class="loading-title"><span data-en="Analyzing your link…" data-sw="Inachambua kiungo chako…">Analyzing your link…</span></div>
+      <div class="loading-sub"><span data-en="Fetching product details, live price, and calculating your Tanzania landed cost." data-sw="Inapata maelezo ya bidhaa, bei halisi, na kuhesabu gharama yako Tanzania.">Fetching product details, live price,<br>and calculating your Tanzania landed cost.</span></div>
     </div>
 
     <!-- Result -->
     <div class="state-result" id="stateResult">
       <div class="sheet-header">
-        <div class="sheet-title" id="sheetHeading">Cost breakdown</div>
+        <div class="sheet-title" id="sheetHeading"><span data-en="Cost breakdown" data-sw="Muhtasari wa gharama">Cost breakdown</span></div>
         <button class="sheet-close" onclick="closeSheet()" aria-label="Close">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -1352,8 +1276,8 @@ details[open] .faq-chevron { transform: rotate(180deg); }
 
         <div class="total-block">
           <div>
-            <div class="tb-lbl">Total landed cost</div>
-            <div class="tb-name">To your door in Tanzania</div>
+            <div class="tb-lbl"><span data-en="Total landed cost" data-sw="Gharama yote hadi Tanzania">Total landed cost</span></div>
+            <div class="tb-name"><span data-en="To your door in Tanzania" data-sw="Hadi mlangoni mwako Tanzania">To your door in Tanzania</span></div>
           </div>
           <div>
             <div class="tb-tzs" id="tbTZS" aria-live="polite">—</div>
@@ -1384,7 +1308,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
 
       <!-- Order form -->
       <div class="order-section" id="orderSection" style="display:none;">
-        <div class="order-title">Order via JustBuy — leave your WhatsApp number</div>
+        <div class="order-title"><span data-en="Order via JustBuy — leave your WhatsApp number" data-sw="Agiza kupitia JustBuy — acha nambari yako ya WhatsApp">Order via JustBuy — leave your WhatsApp number</span></div>
         <div class="order-row">
           <input type="text" id="orderName" placeholder="Your full name" autocomplete="name" />
           <input type="tel" id="orderPhone" placeholder="+255 7XX XXX XXX" autocomplete="tel" />
@@ -1398,7 +1322,7 @@ details[open] .faq-chevron { transform: rotate(180deg); }
       <!-- Success -->
       <div class="success-banner" id="successBanner" role="status" aria-live="polite">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        Order request sent! A JustBuy agent will message you on WhatsApp within minutes.
+        <span data-en="Order request sent! A JustBuy agent will message you on WhatsApp within minutes." data-sw="Ombi la agizo limetumwa! Wakala wa JustBuy atakutumia ujumbe kwa WhatsApp ndani ya dakika chache.">Order request sent! A JustBuy agent will message you on WhatsApp within minutes.</span>
       </div>
     </div>
   </div>
@@ -1615,6 +1539,35 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
   });
 });
+
+
+/* ── Language toggle ── */
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+
+  /* Toggle button states */
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('btnSW').classList.toggle('active', lang === 'sw');
+
+  /* Update all [data-en] / [data-sw] elements */
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = lang === 'sw' ? el.dataset.sw : el.dataset.en;
+  });
+
+  /* Update input placeholder */
+  const input = document.getElementById('urlInput');
+  if (input) {
+    input.placeholder = lang === 'sw'
+      ? input.dataset.swPlaceholder
+      : input.dataset.enPlaceholder;
+  }
+
+  /* Update typewriter store list labels (stores stay in English as brand names) */
+  /* HTML lang attr */
+  document.documentElement.lang = lang === 'sw' ? 'sw' : 'en';
+}
 
 /* ── Typewriter effect ── */
 const STORES  = ['Amazon', 'eBay', 'ASOS', 'AliExpress', 'Zara', 'Shein', 'Temu', 'Noon'];
