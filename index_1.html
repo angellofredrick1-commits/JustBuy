@@ -1,0 +1,244 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>JustBuy Price Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow column — inputs card on top, itemised breakdown below, total as the anchor */
+:root{
+  --bg:#f7f5f4; --surface:#ffffff; --fg:#231a19; --muted:#6e6360; --line:#e7e0de;
+  --brand:#c0302a; --brand-fg:#ffffff;
+  --edit:#e6f4d6; --edit-line:#7fb84a; --edit-fg:#1f3d0c;
+  --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f;
+  --brand:#e5574f; --brand-fg:#ffffff;
+  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f;
+  --brand:#e5574f; --brand-fg:#ffffff;
+  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;gap:20px}
+header h1{margin:0;font-size:26px;font-weight:800;color:var(--brand);text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{margin:0 0 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:480px){.fields{grid-template-columns:1fr}}
+label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px;min-width:0}
+input{font:600 17px var(--font-num);color:var(--edit-fg);background:var(--edit);border:1.5px solid var(--edit-line);border-radius:8px;padding:10px 12px;width:100%;font-variant-numeric:tabular-nums}
+input:focus{outline:3px solid color-mix(in srgb,var(--edit-line) 40%,transparent);outline-offset:1px}
+.wfield{display:flex;flex-direction:column;gap:6px;min-width:0}
+.wlabel{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.wlabel label{font-weight:600;font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:700 11px var(--font-ui);border:0;background:var(--surface);color:var(--muted);padding:2px 8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-fg)}
+.seg button:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.hint{font-size:12px;color:var(--muted);margin-top:10px}
+.hint b{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--edit);border:1.5px solid var(--edit-line);vertical-align:-1px;margin-right:4px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.n{text-align:right;font-family:var(--font-num);white-space:nowrap;padding-left:12px}
+td.t{color:var(--muted);font-size:13px}
+.lbl{font-weight:600}
+.f{display:block;font-size:12px;color:var(--muted)}
+tr.sum td{border-bottom:none;padding-top:12px}
+.total{background:var(--brand);color:var(--brand-fg);border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
+.total .k{font-weight:700}
+.total .v{font:600 22px var(--font-num);text-align:right}
+.total .s{opacity:.85;font-size:13px}
+.total .sv{font:400 14px var(--font-num);text-align:right;opacity:.9}
+.rates{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted)}
+.chip span{font-family:var(--font-num);color:var(--fg)}
+.table-scroll{overflow-x:auto}
+/* Shipment tracking */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.trk-form{display:flex;gap:10px;flex-wrap:wrap}
+.trk-form input{flex:1 1 220px;font-size:16px}
+.btn{font:800 15px var(--font-ui);background:var(--brand);color:var(--brand-fg);border:0;border-radius:8px;padding:10px 18px;cursor:pointer;min-height:44px}
+.btn:disabled{opacity:.6;cursor:progress}
+.btn:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:2px}
+.trk-msg{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.trk-msg:empty{display:none}
+.trk-msg.err{color:var(--brand);font-weight:700}
+.demo{margin:14px 0 0;padding:8px 12px;border-radius:8px;border:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.ship{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.ship-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ship-h .wb{font:600 15px var(--font-num)}
+.ship-h .st{font-weight:800;color:var(--brand)}
+.tl{list-style:none;margin:12px 0 0 5px;padding:0 0 0 18px;border-left:2px solid var(--line)}
+.tl li{position:relative;padding:0 0 14px 4px}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:-29px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--line);border:3px solid var(--surface);box-sizing:border-box}
+.tl li:first-child::before{background:var(--brand)}
+.tl .d{font-weight:700}
+.tl .m{font-size:13px;color:var(--muted)}
+.tl .c{font-size:13px;margin-top:2px}
+.ext{color:var(--brand);font-weight:700}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>JustBuy Import Price Calculator</h1>
+    <p>Enter the item details in the green fields. Everything else updates automatically.</p>
+  </header>
+
+  <section class="card">
+    <h2>Your item</h2>
+    <div class="fields">
+      <label for="price">Online price (USD)<input id="price" type="number" min="0" step="0.01" value="45" inputmode="decimal"></label>
+      <label for="qty">Quantity<input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+      <div class="wfield">
+        <div class="wlabel"><label for="weight">Weight</label>
+          <div class="seg" role="group" aria-label="Weight unit">
+            <button type="button" id="u-kg" aria-pressed="true">kg</button>
+            <button type="button" id="u-lb" aria-pressed="false">lbs</button>
+          </div>
+        </div>
+        <input id="weight" type="number" min="0" step="0.1" value="0.5" inputmode="decimal">
+      </div>
+    </div>
+    <p class="hint"><b></b>Green fields are editable.</p>
+  </section>
+
+  <section class="total" aria-live="polite">
+    <span class="k">Total (paid now)</span><span class="v" id="totTsh">–</span>
+    <span class="s" id="totUsdLbl">In USD</span><span class="sv" id="totUsd">–</span>
+    <span class="s">With shipping on delivery</span><span class="sv" id="grandTsh">–</span>
+  </section>
+
+  <section class="card">
+    <h2>Breakdown</h2>
+    <div class="table-scroll">
+    <table>
+      <tbody>
+        <tr><td><span class="lbl">Online price</span><span class="f">Price × Quantity</span></td><td class="n" id="u1"></td><td class="n t" id="s1"></td></tr>
+        <tr><td><span class="lbl">Domestic tax</span><span class="f">Online price × 9%</span></td><td class="n" id="u2"></td><td class="n t" id="s2"></td></tr>
+        <tr><td><span class="lbl">Importation duties</span><span class="f">(Price + Domestic tax) × 10%</span></td><td class="n" id="u3"></td><td class="n t" id="s3"></td></tr>
+        <tr><td><span class="lbl">JustBuy fee</span><span class="f">(Price + Domestic tax) × 2%</span></td><td class="n" id="u4"></td><td class="n t" id="s4"></td></tr>
+        <tr><td><span class="lbl">VAT</span><span class="f">(Price + Tax + Duties + Fee) × 18%</span></td><td class="n" id="u5"></td><td class="n t" id="s5"></td></tr>
+        <tr><td><span class="lbl">Total (exact)</span><span class="f">Sum of the above</span></td><td class="n" id="u6"></td><td class="n t" id="s6"></td></tr>
+        <tr><td><span class="lbl">Total (rounded)</span><span class="f">Rounded to whole dollars</span></td><td class="n" id="u7"></td><td class="n t" id="s7"></td></tr>
+        <tr class="sum"><td><span class="lbl">Shipping estimate</span><span class="f" id="shipNote">$10 per ½ kg, rounded up · paid on delivery</span></td><td class="n" id="u8"></td><td class="n t" id="s8"></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Fixed rates</h2>
+    <div class="rates">
+      <span class="chip">Exchange rate <span>2,700 TSh/$</span></span>
+      <span class="chip">Domestic tax <span>9%</span></span>
+      <span class="chip">Import duty <span>10%</span></span>
+      <span class="chip">JustBuy fee <span>2%</span></span>
+      <span class="chip">VAT <span>18%</span></span>
+    </div>
+  </section>
+
+  <section class="card" id="track" aria-labelledby="track-h">
+    <h2 id="track-h">Track your order</h2>
+    <form class="trk-form" id="trkForm" novalidate>
+      <label for="waybill" class="sr">Waybill number</label>
+      <input id="waybill" name="waybill" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Waybill number" aria-describedby="trkHint">
+      <button class="btn" type="submit" id="trkBtn">Track</button>
+    </form>
+    <p class="hint" id="trkHint">Use the Aramex waybill number we sent you. Separate several with commas.</p>
+    <p class="trk-msg" id="trkMsg" role="status" aria-live="polite"></p>
+    <div id="trkOut"></div>
+  </section>
+</div>
+
+<script>
+const R={fx:2700,tax:0.09,duty:0.10,fee:0.02,vat:0.18};
+const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
+const usd=x=>"$"+x.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const tsh=x=>"TSh "+Math.round(x).toLocaleString("en-US");
+const $=id=>document.getElementById(id);
+function calc(){
+  const price=Math.max(0,parseFloat($("price").value)||0);
+  const qty=Math.max(0,parseFloat($("qty").value)||0);
+  const w=Math.max(0,parseFloat($("weight").value)||0);
+  const kg=unit==="lb"?w*LB:w;
+  const online=price*qty;
+  const tax=r2(online*R.tax);
+  const duty=r2((online+tax)*R.duty);
+  const fee=r2((online+tax)*R.fee);
+  const vat=r2((online+tax+duty+fee)*R.vat);
+  const exact=online+tax+duty+fee+vat;
+  const rounded=Math.round(exact);
+  const ship=Math.ceil(kg/0.5-1e-9)*10;
+  const rows=[online,tax,duty,fee,vat,exact,rounded,ship];
+  rows.forEach((v,i)=>{$("u"+(i+1)).textContent=usd(v);$("s"+(i+1)).textContent=tsh(v*R.fx);});
+  $("totTsh").textContent=tsh(rounded*R.fx);
+  $("totUsd").textContent=usd(rounded);
+  $("grandTsh").textContent=tsh((rounded+ship)*R.fx);
+  $("shipNote").textContent=`${kg.toLocaleString("en-US",{maximumFractionDigits:2})} kg · $10 per ½ kg, rounded up · paid on delivery`;
+}
+const LB=0.45359237; let unit="kg";
+function setUnit(u){
+  if(u===unit) return;
+  const v=parseFloat($("weight").value);
+  if(!isNaN(v)){const nv=u==="lb"?v/LB:v*LB;$("weight").value=Math.round(nv*100)/100;}
+  unit=u;
+  $("u-kg").setAttribute("aria-pressed",u==="kg");$("u-lb").setAttribute("aria-pressed",u==="lb");
+  calc();
+}
+$("u-kg").addEventListener("click",()=>setUnit("kg"));
+$("u-lb").addEventListener("click",()=>setUnit("lb"));
+["price","qty","weight"].forEach(id=>$(id).addEventListener("input",calc));
+calc();
+
+/* ---- Shipment tracking ---- */
+(function(){
+  const form=$("trkForm"), inp=$("waybill"), btn=$("trkBtn"), msg=$("trkMsg"), out=$("trkOut");
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const when=iso=>{const d=new Date(iso);return isNaN(d)?esc(iso):d.toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});};
+  function say(text,isErr){msg.textContent=text;msg.className="trk-msg"+(isErr?" err":"");}
+  function render(data){
+    let h="";
+    if(data.demo) h+=`<p class="demo"><strong>Demo data.</strong> Live Aramex tracking switches on once the API credentials are added.</p>`;
+    for(const s of data.shipments||[]){
+      h+=`<div class="ship"><div class="ship-h"><span class="wb">${esc(s.waybill)}</span>`;
+      if(s.found){
+        h+=`<span class="st">${esc(s.events[0].description)}</span></div><ol class="tl">`;
+        for(const e of s.events){
+          h+=`<li><div class="d">${esc(e.description)}</div><div class="m">${when(e.dateTime)}${e.location?" · "+esc(e.location):""}</div>${e.comments?`<div class="c">${esc(e.comments)}</div>`:""}</li>`;
+        }
+        h+=`</ol>`;
+      }else{
+        h+=`<span class="st">No updates yet</span></div><p class="trk-msg">Aramex has no scans for this number yet. Double-check it, or try again later.</p>`;
+      }
+      h+=`</div>`;
+    }
+    out.innerHTML=h;
+  }
+  form.addEventListener("submit",async ev=>{
+    ev.preventDefault();
+    const waybills=inp.value.split(/[\s,;]+/).map(s=>s.trim()).filter(Boolean);
+    out.innerHTML="";
+    if(!waybills.length){say("Enter a waybill number first.",true);inp.focus();return;}
+    btn.disabled=true;btn.textContent="Tracking…";say("Checking with Aramex…");
+    try{
+      const res=await fetch("/.netlify/functions/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({waybills})});
+      const data=await res.json().catch(()=>({ok:false,error:"Unexpected response from the server."}));
+      if(!data.shipments){say(data.error||"Tracking failed. Try again.",true);return;}
+      const notes=(data.notifications||[]).map(n=>n.message).filter(Boolean).join(" ");
+      say(data.hasErrors?("Aramex reported a problem: "+(notes||"unknown error")):"",!!data.hasErrors);
+      render(data);
+    }catch(e){
+      say("Couldn't connect. Check your internet and try again.",true);
+    }finally{btn.disabled=false;btn.textContent="Track";}
+  });
+  const q=new URLSearchParams(location.search).get("waybill");
+  if(q){inp.value=q;form.requestSubmit();}
+})();
+</script>
+
+</body></html>
