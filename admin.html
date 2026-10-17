@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>JustBuy Shipments Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* ====== SETTINGS ====== */
+:root{
+  --bg:#f6f4f3; --surface:#fff; --fg:#231a19; --muted:#6e6360; --line:#e6dfdd; --soft:#faf7f6;
+  --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#fff;
+  --ok:#2f7d32; --warn:#b26a00; --hold:#8a3ffc;
+  --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+header.top h1{margin:0;font-size:22px;font-weight:800;color:var(--brand)}
+header.top .who{color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);color:var(--brand-fg);border-color:var(--brand)}
+.btn.primary:hover{background:var(--brand-dark)}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn.danger{color:var(--brand)}
+.btn:disabled{opacity:.5;cursor:default}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+label{display:block;font-size:13px;font-weight:700;min-width:0}
+label span.opt{font-weight:400;color:var(--muted);margin-left:4px}
+label>input,label>select,label>textarea{display:block;margin-top:4px}
+input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);width:100%}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus,.btn:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 25%,transparent);outline-offset:1px;border-color:var(--brand)}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+.msg{font-size:13px;padding:8px 12px;border-radius:8px;margin-top:10px}
+.msg.err{background:#fdecea;color:#8c1d18}
+.msg.ok{background:#e8f4ea;color:#1e5a22}
+/* Login */
+#login{max-width:400px;margin:60px auto}
+#login h2{margin:0 0 4px;font-size:20px}
+#login p{margin:0 0 16px;color:var(--muted);font-size:14px}
+#login form{display:flex;flex-direction:column;gap:12px}
+.linkbtn{background:none;border:0;color:var(--brand);font-weight:700;cursor:pointer;padding:0;font-size:13px}
+/* Main layout */
+.layout{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar input{flex:1 1 160px}
+.toolbar select{flex:0 1 170px}
+.list{display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow:auto}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 8px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;cursor:pointer;width:100%}
+.item:hover{border-color:var(--muted)}
+.item.sel{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.item .tn{font-family:var(--font-num);font-weight:600;font-size:13px}
+.item .cu{font-weight:700;grid-column:1}
+.item .dt{color:var(--muted);font-size:12px;grid-column:1/-1}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:#eee;color:#333;white-space:nowrap;align-self:start}
+.pill.s-progress{background:#fdeceb;color:var(--brand-dark)}
+.pill.s-done{background:#e5f3e6;color:var(--ok)}
+.pill.s-hold{background:#fff2dc;color:var(--warn)}
+.empty{color:var(--muted);text-align:center;padding:28px 8px;font-size:14px}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.detail-head h2{margin:0;font-size:20px}
+.detail-head .tn{font-family:var(--font-num);font-size:15px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+section+section{margin-top:16px}
+h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.events{list-style:none;margin:0;padding:0}
+.events li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.events li:first-child{border-top:0}
+.events .st{font-weight:800}
+.events .meta{color:var(--muted);font-size:13px}
+.events .nt{font-size:14px;grid-column:1}
+.events .del{grid-row:1/span 3;grid-column:2;align-self:center}
+.row-end{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap}
+.share{background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.hidden{display:none!important}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>JustBuy · Shipments Admin</h1>
+    <div class="who hidden" id="who"><span id="whoEmail"></span><button class="btn small" id="signOut">Sign out</button></div>
+  </header>
+
+  <!-- LOGIN -->
+  <div id="login" class="card hidden">
+    <h2 id="loginTitle">Sign in</h2>
+    <p id="loginSub">Only JustBuy admins can manage shipments.</p>
+    <form id="loginForm">
+      <label>Email<input id="lEmail" type="email" autocomplete="username" required></label>
+      <label>Password<input id="lPass" type="password" autocomplete="current-password" minlength="8" required></label>
+      <button class="btn primary" id="lSubmit" type="submit">Sign in</button>
+    </form>
+    <div style="margin-top:12px"><button class="linkbtn" id="toggleMode" type="button">First time? Create your admin password</button></div>
+    <div id="lMsg"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div class="layout">
+      <div class="card">
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Search tracking no. or customer">
+          <select id="filter"><option value="">All statuses</option></select>
+        </div>
+        <button class="btn primary" id="newBtn" style="width:100%;margin-bottom:12px">+ New shipment</button>
+        <div class="list" id="list"></div>
+      </div>
+
+      <div class="card" id="detail">
+        <div class="empty">Select a shipment, or create a new one.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="tplForm">
+  <form id="shipForm">
+    <div class="detail-head">
+      <div><h2 id="fTitle">New shipment</h2><div class="tn" id="fTn"></div></div>
+    </div>
+    <div class="grid g2">
+      <label>Tracking number<input id="f_tracking_no" required pattern="[A-Za-z0-9\-]{6,30}" title="6–30 letters, numbers or dashes"></label>
+      <label>Customer (company)<input id="f_customer_name" required></label>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <label>What's in the shipment <span class="opt">optional</span><input id="f_description" placeholder="e.g. 40 cartons of phone accessories"></label>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <label>From <span class="opt">optional</span><input id="f_origin" placeholder="e.g. Guangzhou, China"></label>
+      <label>To <span class="opt">optional</span><input id="f_destination" placeholder="e.g. Dar es Salaam"></label>
+    </div>
+    <div class="grid g3" style="margin-top:12px">
+      <label>Pieces <span class="opt">optional</span><input id="f_pieces" type="number" min="0" step="1"></label>
+      <label>Weight (kg) <span class="opt">optional</span><input id="f_weight_kg" type="number" min="0" step="0.01"></label>
+      <label>Expected arrival <span class="opt">optional</span><input id="f_eta" type="date"></label>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <label>Note for customer <span class="opt">shown on tracking page</span><textarea id="f_customer_note"></textarea></label>
+      <label>Internal note <span class="opt">never shown to customer</span><textarea id="f_internal_note"></textarea></label>
+    </div>
+    <div class="row-end">
+      <button type="button" class="btn danger hidden" id="fDelete">Delete shipment</button>
+      <button type="button" class="btn" id="fCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="fSave">Save</button>
+    </div>
+    <div id="fMsg"></div>
+  </form>
+</template>
+
+<script>
+/* ====== SETTINGS ====== */
+const SUPABASE_URL = "https://icenxafytlodugspnzfj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
+const TRACK_PAGE_URL = new URL("track.html", location.href).href; // track.html sits next to this page on the same site
+const STATUSES = ["Order received","Purchased from supplier","At origin warehouse","Departed origin","In transit","Arrived in Tanzania","Customs clearance","Ready for collection","Out for delivery","Delivered","On hold"];
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDT = d => d ? new Date(d).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Africa/Dar_es_Salaam"}) : "";
+const fmtD = d => d ? new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}) : "";
+const pillClass = s => s==="Delivered" ? "s-done" : s==="On hold" ? "s-hold" : "s-progress";
+const msg = (el, text, kind="err") => { $(el).innerHTML = text ? `<div class="msg ${kind}">${esc(text)}</div>` : ""; };
+
+let shipments = [], selectedId = null, signUpMode = false;
+
+STATUSES.forEach(s => $("filter").insertAdjacentHTML("beforeend", `<option>${esc(s)}</option>`));
+
+/* ---------- Auth ---------- */
+$("toggleMode").onclick = () => {
+  signUpMode = !signUpMode;
+  $("loginTitle").textContent = signUpMode ? "Create admin password" : "Sign in";
+  $("lSubmit").textContent = signUpMode ? "Create account" : "Sign in";
+  $("toggleMode").textContent = signUpMode ? "Already have a password? Sign in" : "First time? Create your admin password";
+  $("lPass").autocomplete = signUpMode ? "new-password" : "current-password";
+  msg("lMsg","");
+};
+$("loginForm").onsubmit = async e => {
+  e.preventDefault();
+  const email = $("lEmail").value.trim(), password = $("lPass").value;
+  $("lSubmit").disabled = true; msg("lMsg","");
+  try {
+    if (signUpMode) {
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+      if (!data.session) { msg("lMsg","Account created. Check your email for a confirmation link, then come back and sign in.","ok"); return; }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (err) { msg("lMsg", err.message || "Sign-in failed."); }
+  finally { $("lSubmit").disabled = false; }
+};
+$("signOut").onclick = () => sb.auth.signOut();
+
+sb.auth.onAuthStateChange((_evt, session) => { setTimeout(() => route(session), 0); });
+
+async function route(session){
+  if (!session) { show("login"); return; }
+  const { data: ok } = await sb.rpc("is_admin");
+  if (!ok) {
+    show("login");
+    msg("lMsg", `${session.user.email} is not on the admin list. Ask the owner to add this email, or sign in with an admin email.`);
+    await sb.auth.signOut(); return;
+  }
+  $("whoEmail").textContent = session.user.email;
+  show("app"); loadList();
+}
+function show(which){
+  $("login").classList.toggle("hidden", which!=="login");
+  $("app").classList.toggle("hidden", which!=="app");
+  $("who").classList.toggle("hidden", which!=="app");
+}
+
+/* ---------- List ---------- */
+async function loadList(){
+  const { data, error } = await sb.from("shipments").select("id,tracking_no,customer_name,status,updated_at").order("updated_at",{ascending:false}).limit(1000);
+  if (error) { $("list").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+  shipments = data; renderList();
+}
+function renderList(){
+  const q = $("search").value.trim().toLowerCase(), f = $("filter").value;
+  const rows = shipments.filter(s => (!f || s.status===f) && (!q || s.tracking_no.toLowerCase().includes(q) || s.customer_name.toLowerCase().includes(q)));
+  $("list").innerHTML = rows.length ? rows.map(s => `
+    <button class="item ${s.id===selectedId?"sel":""}" data-id="${s.id}">
+      <span class="tn">${esc(s.tracking_no)}</span><span class="pill ${pillClass(s.status)}">${esc(s.status)}</span>
+      <span class="cu">${esc(s.customer_name)}</span>
+      <span class="dt">Updated ${fmtDT(s.updated_at)}</span>
+    </button>`).join("") : `<div class="empty">${shipments.length ? "No shipments match." : "No shipments yet. Create your first one."}</div>`;
+}
+$("search").oninput = renderList; $("filter").onchange = renderList;
+$("list").onclick = e => { const b = e.target.closest(".item"); if (b) openShipment(b.dataset.id); };
+$("newBtn").onclick = () => { selectedId = null; renderList(); renderForm(null); };
+
+/* ---------- Tracking number generator ---------- */
+function newTrackingNo(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I confusion
+  const a = new Uint32Array(8); crypto.getRandomValues(a);
+  return "JB-" + Array.from(a, n => chars[n % chars.length]).join("");
+}
+
+/* ---------- Create / edit form ---------- */
+const FIELDS = ["tracking_no","customer_name","description","origin","destination","pieces","weight_kg","eta","customer_note","internal_note"];
+function renderForm(s){
+  $("detail").innerHTML = ""; $("detail").appendChild($("tplForm").content.cloneNode(true));
+  $("fTitle").textContent = s ? "Edit details" : "New shipment";
+  FIELDS.forEach(k => $("f_"+k).value = s ? (s[k] ?? "") : "");
+  if (!s) $("f_tracking_no").value = newTrackingNo();
+  if (s) $("fDelete").classList.remove("hidden");
+  $("fCancel").onclick = () => s ? openShipment(s.id) : ($("detail").innerHTML = '<div class="empty">Select a shipment, or create a new one.</div>');
+  $("fDelete").onclick = () => confirmDelete(s);
+  $("shipForm").onsubmit = async e => {
+    e.preventDefault();
+    const row = {};
+    FIELDS.forEach(k => { const v = $("f_"+k).value.trim(); row[k] = v === "" ? null : v; });
+    row.tracking_no = row.tracking_no.toUpperCase();
+    if (row.pieces != null) row.pieces = parseInt(row.pieces,10);
+    if (row.weight_kg != null) row.weight_kg = parseFloat(row.weight_kg);
+    $("fSave").disabled = true; msg("fMsg","");
+    let res;
+    if (s) res = await sb.from("shipments").update(row).eq("id", s.id).select().single();
+    else {
+      res = await sb.from("shipments").insert(row).select().single();
+      if (!res.error) await sb.from("shipment_events").insert({ shipment_id: res.data.id, status: "Order received", location: row.origin });
+    }
+    $("fSave").disabled = false;
+    if (res.error) { msg("fMsg", res.error.code==="23505" ? "That tracking number is already used." : res.error.message); return; }
+    await loadList(); openShipment(res.data.id);
+  };
+}
+function confirmDelete(s){
+  const box = $("fMsg");
+  box.innerHTML = `<div class="msg err">Delete ${esc(s.tracking_no)} and all its updates? This can't be undone.
+    <div class="row-end"><button type="button" class="btn small" id="dNo">Keep it</button><button type="button" class="btn small primary" id="dYes">Delete</button></div></div>`;
+  $("dNo").onclick = () => box.innerHTML = "";
+  $("dYes").onclick = async () => {
+    const { error } = await sb.from("shipments").delete().eq("id", s.id);
+    if (error) { msg("fMsg", error.message); return; }
+    selectedId = null; await loadList();
+    $("detail").innerHTML = '<div class="empty">Shipment deleted.</div>';
+  };
+}
+
+/* ---------- Shipment detail ---------- */
+async function openShipment(id){
+  selectedId = id; renderList();
+  const [{ data: s, error }, { data: ev }] = await Promise.all([
+    sb.from("shipments").select("*").eq("id", id).single(),
+    sb.from("shipment_events").select("*").eq("shipment_id", id).order("happened_at",{ascending:false}).order("created_at",{ascending:false})
+  ]);
+  if (error) { $("detail").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+  const link = `${TRACK_PAGE_URL}?t=${encodeURIComponent(s.tracking_no)}`;
+  const shareText = `Hello ${s.customer_name}, you can track your JustBuy shipment here:\n${link}\nTracking number: ${s.tracking_no}`;
+  const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const facts = [["From",s.origin],["To",s.destination],["Pieces",s.pieces],["Weight",s.weight_kg!=null? s.weight_kg+" kg":null],["Expected arrival",fmtD(s.eta)]].filter(f=>f[1]!=null && f[1]!=="");
+  $("detail").innerHTML = `
+    <div class="detail-head">
+      <div><h2>${esc(s.customer_name)}</h2><div class="tn">${esc(s.tracking_no)}</div></div>
+      <div class="actions"><span class="pill ${pillClass(s.status)}">${esc(s.status)}</span><button class="btn small" id="editBtn">Edit details</button></div>
+    </div>
+    ${s.description?`<p style="margin:0 0 8px">${esc(s.description)}</p>`:""}
+    ${facts.length?`<p class="meta" style="margin:0 0 4px;color:var(--muted);font-size:14px">${facts.map(f=>`${esc(f[0])}: <b style="color:var(--fg)">${esc(f[1])}</b>`).join(" &nbsp;·&nbsp; ")}</p>`:""}
+    ${s.internal_note?`<p style="font-size:13px;color:var(--muted);margin:6px 0 0">Internal: ${esc(s.internal_note)}</p>`:""}
+
+    <section class="card" style="background:var(--soft);margin-top:16px">
+      <h3>Add status update</h3>
+      <form id="evForm">
+        <div class="grid g3">
+          <label>Status<select id="evStatus">${STATUSES.map(x=>`<option ${x===s.status?"selected":""}>${esc(x)}</option>`).join("")}</select></label>
+          <label>Location <span class="opt">optional</span><input id="evLoc" placeholder="e.g. Dubai hub"></label>
+          <label>Date &amp; time<input id="evWhen" type="datetime-local" value="${now.toISOString().slice(0,16)}" required></label>
+        </div>
+        <label style="margin-top:12px">Note for customer <span class="opt">optional</span><input id="evNote" placeholder="e.g. Container loaded on vessel MSC Ruby"></label>
+        <div class="row-end"><button class="btn primary" id="evSave" type="submit">Add update</button></div>
+        <div id="evMsg"></div>
+      </form>
+    </section>
+
+    <section>
+      <h3>History (customer sees this)</h3>
+      ${ev && ev.length ? `<ul class="events">${ev.map(e=>`
+        <li><span class="st">${esc(e.status)}</span>
+          <span class="meta">${fmtDT(e.happened_at)}${e.location?" · "+esc(e.location):""}</span>
+          ${e.note?`<span class="nt">${esc(e.note)}</span>`:""}
+          <button class="btn small danger del" data-ev="${e.id}">Remove</button></li>`).join("")}</ul>`
+        : `<div class="empty">No updates yet.</div>`}
+    </section>
+
+    <section>
+      <h3>Send to customer</h3>
+      <div class="share" id="shareText">${esc(shareText)}</div>
+      <div class="row-end"><button class="btn small" id="copyBtn">Copy message</button></div>
+    </section>`;
+
+  $("editBtn").onclick = () => renderForm(s);
+  $("copyBtn").onclick = async () => {
+    try { await navigator.clipboard.writeText(shareText); $("copyBtn").textContent = "Copied"; }
+    catch { const r = document.createRange(); r.selectNodeContents($("shareText")); getSelection().removeAllRanges(); getSelection().addRange(r); $("copyBtn").textContent = "Selected — press Ctrl+C"; }
+  };
+  $("evForm").onsubmit = async e => {
+    e.preventDefault(); $("evSave").disabled = true;
+    const { error } = await sb.from("shipment_events").insert({
+      shipment_id: s.id, status: $("evStatus").value,
+      location: $("evLoc").value.trim() || null, note: $("evNote").value.trim() || null,
+      happened_at: new Date($("evWhen").value).toISOString()
+    });
+    $("evSave").disabled = false;
+    if (error) { msg("evMsg", error.message); return; }
+    await loadList(); openShipment(s.id);
+  };
+  $("detail").querySelectorAll("[data-ev]").forEach(b => b.onclick = async () => {
+    if (b.dataset.armed) {
+      const { error } = await sb.from("shipment_events").delete().eq("id", b.dataset.ev);
+      if (error) { b.textContent = "Couldn't remove — try again"; delete b.dataset.armed; return; }
+      await loadList(); openShipment(s.id);
+    } else { b.dataset.armed = "1"; b.textContent = "Click again to remove"; }
+  });
+}
+</script>
+</body>
+</html>

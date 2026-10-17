@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Track Your Shipment · JustBuy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#f6f4f3; --surface:#fff; --fg:#231a19; --muted:#6e6360; --line:#e6dfdd; --soft:#faf7f6;
+  --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#fff; --ok:#2f7d32; --warn:#b26a00;
+  --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
+.wrap{max-width:680px;margin:0 auto;padding:32px 16px 56px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:28px;font-weight:800;text-wrap:balance}
+h1 b{color:var(--brand)}
+.lead{margin:4px 0 0;color:var(--muted)}
+form.search{display:flex;gap:8px;flex-wrap:wrap}
+form.search input{flex:1 1 220px;font:600 17px var(--font-num);letter-spacing:.04em;text-transform:uppercase;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);min-width:0}
+form.search input::placeholder{text-transform:none;letter-spacing:0;font-family:var(--font-ui);font-weight:400}
+form.search input:focus{outline:3px solid color-mix(in srgb,var(--brand) 25%,transparent);border-color:var(--brand)}
+form.search button{background:var(--brand);color:var(--brand-fg);border:0;border-radius:10px;padding:12px 22px;font:800 16px var(--font-ui);cursor:pointer}
+form.search button:hover{background:var(--brand-dark)}
+form.search button:disabled{opacity:.6}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.notice{padding:14px 16px;border-radius:10px;background:#fdecea;color:#8c1d18;font-size:14px}
+.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.tn{font-family:var(--font-num);font-size:14px;color:var(--muted)}
+.status{font-size:24px;font-weight:800;margin:2px 0 0;color:var(--brand)}
+.status.done{color:var(--ok)} .status.hold{color:var(--warn)}
+.upd{font-size:13px;color:var(--muted)}
+.cust{text-align:right;font-weight:700}
+@media (max-width:520px){.cust{text-align:left}}
+/* progress */
+.steps{list-style:none;margin:20px 0 4px;padding:0;display:grid;grid-template-columns:repeat(6,1fr);position:relative}
+.steps li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12px;color:var(--muted);position:relative;z-index:1;padding:0 2px}
+.steps li::before{content:"";position:absolute;top:9px;left:-50%;width:100%;height:3px;background:var(--line);z-index:-1}
+.steps li:first-child::before{display:none}
+.steps li.done::before,.steps li.cur::before{background:var(--brand)}
+.dot{width:21px;height:21px;border-radius:50%;background:var(--surface);border:3px solid var(--line)}
+.steps li.done .dot{background:var(--brand);border-color:var(--brand)}
+.steps li.cur .dot{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 18%,transparent)}
+.steps li.cur{color:var(--fg);font-weight:800}
+.steps.complete li .dot,.steps.complete li::before{background:var(--ok);border-color:var(--ok)}
+@media (max-width:520px){.steps li span{display:none}.steps li.cur span{display:block;position:absolute;top:26px;white-space:nowrap}.steps{margin-bottom:22px}}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.facts div{display:flex;flex-direction:column}
+.facts .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.facts .v{font-weight:700}
+.note{margin-top:14px;background:var(--soft);border-radius:10px;padding:12px 14px;font-size:14px}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{position:relative;padding:0 0 18px 26px}
+.tl li::before{content:"";position:absolute;left:5px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--line)}
+.tl li::after{content:"";position:absolute;left:10px;top:20px;bottom:0;width:1px;background:var(--line)}
+.tl li:last-child::after{display:none}
+.tl li:first-child::before{background:var(--brand)}
+.tl .s{font-weight:800}
+.tl .m{font-size:13px;color:var(--muted)}
+.tl .n{font-size:14px;margin-top:2px}
+footer{color:var(--muted);font-size:13px;text-align:center}
+.hidden{display:none!important}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Track your <b>JustBuy</b> shipment</h1>
+    <p class="lead">Enter the tracking number we sent you.</p>
+  </header>
+
+  <form class="search" id="f">
+    <input id="q" placeholder="e.g. JB-7K2QX9MD" autocomplete="off" spellcheck="false" aria-label="Tracking number" required>
+    <button id="go" type="submit">Track</button>
+  </form>
+
+  <div id="out"></div>
+
+  <footer>Questions about your shipment? Contact your JustBuy account manager.</footer>
+</div>
+
+<script>
+const SUPABASE_URL = "https://icenxafytlodugspnzfj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
+const MILESTONES = [
+  {label:"Order received", match:["Order received","Purchased from supplier"]},
+  {label:"At origin", match:["At origin warehouse"]},
+  {label:"In transit", match:["Departed origin","In transit"]},
+  {label:"In Tanzania", match:["Arrived in Tanzania"]},
+  {label:"Customs", match:["Customs clearance"]},
+  {label:"Delivered", match:["Ready for collection","Out for delivery","Delivered"]},
+];
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession:false } });
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDT = d => new Date(d).toLocaleString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Africa/Dar_es_Salaam"});
+const fmtD = d => new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+
+function stageIndex(status, events){
+  // Use the furthest milestone reached in history, so "On hold" keeps the shipment's place.
+  let best = -1;
+  [status, ...events.map(e=>e.status)].forEach(s => {
+    const i = MILESTONES.findIndex(m => m.match.includes(s)); if (i > best) best = i;
+  });
+  return best;
+}
+
+async function track(code){
+  code = code.trim().toUpperCase();
+  if (!code) return;
+  $("go").disabled = true; $("out").innerHTML = "";
+  const { data, error } = await sb.rpc("track_shipment", { p_tracking: code });
+  $("go").disabled = false;
+  history.replaceState(null, "", "?t=" + encodeURIComponent(code));
+  if (error) { $("out").innerHTML = `<div class="notice">We couldn't reach the tracking service. Check your connection and try again.</div>`; return; }
+  if (!data) { $("out").innerHTML = `<div class="notice">No shipment found for <b>${esc(code)}</b>. Check the number exactly as we sent it, including the dashes.</div>`; return; }
+  render(data);
+}
+
+function render(s){
+  const ev = s.events || [];
+  const cur = stageIndex(s.status, ev);
+  const delivered = s.status === "Delivered", hold = s.status === "On hold";
+  const facts = [["From",s.origin],["To",s.destination],["Contents",s.description],["Pieces",s.pieces],["Weight",s.weight_kg!=null?`${Number(s.weight_kg)} kg`:null],["Expected arrival",s.eta?fmtD(s.eta):null]].filter(f=>f[1]!=null&&f[1]!=="");
+  $("out").innerHTML = `
+    <div class="card">
+      <div class="head">
+        <div>
+          <div class="tn">${esc(s.tracking_no)}</div>
+          <div class="status ${delivered?"done":hold?"hold":""}">${esc(s.status)}</div>
+          <div class="upd">Last updated ${fmtDT(s.updated_at)} (EAT)</div>
+        </div>
+        <div class="cust">${esc(s.customer_name)}</div>
+      </div>
+      <ol class="steps ${delivered?"complete":""}" aria-label="Progress">
+        ${MILESTONES.map((m,i)=>`<li class="${i<cur||delivered?"done":i===cur?"cur":""}"><div class="dot"></div><span>${esc(m.label)}</span></li>`).join("")}
+      </ol>
+      ${facts.length?`<div class="facts">${facts.map(f=>`<div><span class="k">${esc(f[0])}</span><span class="v">${esc(f[1])}</span></div>`).join("")}</div>`:""}
+      ${s.customer_note?`<div class="note">${esc(s.customer_note)}</div>`:""}
+    </div>
+    <div class="card">
+      <h2>Shipment history</h2>
+      ${ev.length?`<ol class="tl">${ev.map(e=>`<li><div class="s">${esc(e.status)}</div><div class="m">${fmtDT(e.happened_at)}${e.location?" · "+esc(e.location):""}</div>${e.note?`<div class="n">${esc(e.note)}</div>`:""}</li>`).join("")}</ol>`:`<p class="upd">No updates yet.</p>`}
+    </div>`;
+}
+
+$("f").onsubmit = e => { e.preventDefault(); track($("q").value); };
+const t = new URLSearchParams(location.search).get("t");
+if (t) { $("q").value = t; track(t); }
+</script>
+</body>
+</html>
