@@ -2,181 +2,40 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <script src="theme.js"></script>
 <meta name="robots" content="noindex,nofollow">
-<title>JustBuy Client Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
-<style>
-:root{
-  --err-bg:#fdecea; --err-fg:#8c1d18; --ok-bg:#e5f3e6; --okmsg-fg:#1e5a22; --warn-bg:#fff2dc; --brand-bg:#fdeceb; --pill-bg:#eeeeee; --pill-fg:#333333; --warn:#b26a00;
-
-  --bg:#f6f4f3; --surface:#fff; --fg:#231a19; --muted:#6e6360; --line:#e6dfdd; --soft:#faf7f6;
-  --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#fff; --ok:#2f7d32; --warn:#b26a00;
-  --edit:#e6f4d6; --edit-line:#7fb84a; --edit-fg:#1f3d0c;
-  --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}
-
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
-button,input{font:inherit;color:inherit}
-.wrap{max-width:980px;margin:0 auto;padding:22px 16px 56px}
-.hidden{display:none!important}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
-.btn{font:800 15px var(--font-ui);background:var(--brand);color:var(--brand-fg);border:0;border-radius:10px;padding:11px 20px;cursor:pointer;min-height:44px}
-.btn:hover{background:var(--brand-dark)}
-.btn:disabled{opacity:.6;cursor:progress}
-.btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line);font-weight:700;padding:7px 14px;min-height:0}
-.btn.ghost:hover{border-color:var(--muted)}
-:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:2px}
-.err{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:var(--err-bg);color:var(--err-fg);font-size:14px}
-h2.sec{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:800}
-
-/* Sign in */
-#gate{max-width:460px;margin:48px auto 0}
-#gate h1{margin:0;font-size:26px;font-weight:800}
-#gate h1 b{color:var(--brand)}
-#gate p{color:var(--muted);margin:6px 0 18px}
-#gateForm{display:flex;flex-direction:column;gap:12px}
-#code{font:600 18px var(--font-num);letter-spacing:.06em;text-transform:uppercase;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);width:100%}
-#code::placeholder{letter-spacing:0;text-transform:none;font-family:var(--font-ui);font-weight:400}
-.remember{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
-
-/* App header */
-.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.top .eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
-.top h1{margin:0;font-size:26px;font-weight:800;text-wrap:balance}
-.top .act{display:flex;gap:8px}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}
-.tab{border:0;background:none;padding:10px 16px;font-weight:800;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
-.tab.on{color:var(--brand);border-bottom-color:var(--brand)}
-
-/* Summary */
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
-@media (max-width:640px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer}
-.stat:hover{border-color:var(--muted)}
-.stat.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
-.stat .n{font:600 26px var(--font-num);display:block;line-height:1.2}
-.stat .l{font-size:13px;color:var(--muted);font-weight:700}
-.stat.hold .n{color:var(--warn)} .stat.done .n{color:var(--ok)} .stat.move .n{color:var(--brand)}
-.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.toolbar input{flex:1 1 220px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
-.fresh{font-size:12px;color:var(--muted)}
-
-/* Shipment list */
-.ships{display:flex;flex-direction:column;gap:8px}
-.ship{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.ship>summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center}
-.ship>summary::-webkit-details-marker{display:none}
-.ship[open]>summary{border-bottom:1px solid var(--line);background:var(--soft)}
-.ship .tn{font:600 14px var(--font-num)}
-.ship .ds{color:var(--muted);font-size:14px;grid-column:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ship .when{color:var(--muted);font-size:12px;text-align:right;grid-column:2}
-.pill{display:inline-block;font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--brand-bg);color:var(--brand-dark);white-space:nowrap;justify-self:end}
-.pill.done{background:var(--ok-bg);color:var(--ok)} .pill.hold{background:var(--warn-bg);color:var(--warn)}
-.body{padding:16px}
-.steps{list-style:none;margin:4px 0 8px;padding:0;display:grid;grid-template-columns:repeat(6,1fr)}
-.steps li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12px;color:var(--muted);position:relative;z-index:1;padding:0 2px}
-.steps li::before{content:"";position:absolute;top:9px;left:-50%;width:100%;height:3px;background:var(--line);z-index:-1}
-.steps li:first-child::before{display:none}
-.steps li.done::before,.steps li.cur::before{background:var(--brand)}
-.dot{width:21px;height:21px;border-radius:50%;background:var(--surface);border:3px solid var(--line)}
-.steps li.done .dot{background:var(--brand);border-color:var(--brand)}
-.steps li.cur .dot{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 18%,transparent)}
-.steps li.cur{color:var(--fg);font-weight:800}
-.steps.complete li .dot,.steps.complete li::before{background:var(--ok);border-color:var(--ok)}
-@media (max-width:560px){.steps li span{display:none}.steps li.cur span{display:block;position:absolute;top:26px;white-space:nowrap}.steps{margin-bottom:28px}}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line)}
-.facts div{display:flex;flex-direction:column;min-width:0}
-.facts .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
-.facts .v{font-weight:700;overflow-wrap:anywhere}
-.note{margin-top:14px;background:var(--soft);border-radius:10px;padding:12px 14px;font-size:14px}
-.tl{list-style:none;margin:16px 0 0;padding:0}
-.tl li{position:relative;padding:0 0 14px 24px}
-.tl li::before{content:"";position:absolute;left:4px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--line)}
-.tl li::after{content:"";position:absolute;left:9px;top:20px;bottom:0;width:1px;background:var(--line)}
-.tl li:last-child::after{display:none}
-.tl li:first-child::before{background:var(--brand)}
-.tl .s{font-weight:800} .tl .m{font-size:13px;color:var(--muted)} .tl .x{font-size:14px}
-.empty{color:var(--muted);text-align:center;padding:32px 12px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
-
-/* Calculator */
-.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
-@media (max-width:760px){.calc{grid-template-columns:1fr}}
-.calc .col{display:flex;flex-direction:column;gap:16px;min-width:0}
-.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media (max-width:480px){.fields{grid-template-columns:1fr}}
-.fields label,.wfield{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:13px;min-width:0}
-.fields input{font:600 17px var(--font-num);color:var(--edit-fg);background:var(--edit);border:1.5px solid var(--edit-line);border-radius:8px;padding:10px 12px;width:100%;font-variant-numeric:tabular-nums}
-.wlabel{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.seg button{font:800 11px var(--font-ui);border:0;background:var(--surface);color:var(--muted);padding:2px 8px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-fg)}
-.hint{font-size:12px;color:var(--muted);margin:10px 0 0}
-.total{background:var(--brand);color:var(--brand-fg);border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
-.total .k{font-weight:800}
-.total .v{font:600 24px var(--font-num);text-align:right}
-.total .s{opacity:.85;font-size:13px}
-.total .sv{font:400 14px var(--font-num);text-align:right;opacity:.92}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:top}
-tr:last-child td{border-bottom:0}
-td.n{text-align:right;font-family:var(--font-num);white-space:nowrap;padding-left:10px}
-td.t{color:var(--muted);font-size:13px}
-.lbl{font-weight:700} .f{display:block;font-size:12px;color:var(--muted)}
-.rates{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted)}
-.chip span{font-family:var(--font-num);color:var(--fg)}
-.scroll{overflow-x:auto}
-.agrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-@media (max-width:760px){.agrid{grid-template-columns:1fr}}
-.addr{background:var(--surface);border:1.5px solid var(--fg);border-radius:12px;overflow:hidden}
-.addr header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--fg);background:var(--soft)}
-.addr header h3{margin:0;font-size:17px}
-.addr dl{margin:0;padding:6px 16px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 12px;align-items:center}
-.addr dt{font-size:12px;color:var(--muted);font-weight:700;padding:7px 0}
-.addr dd{margin:0;font:600 14px var(--font-num);overflow-wrap:anywhere;padding:7px 0}
-.addr dt,.addr dd,.addr .cp{border-bottom:1px solid var(--line)}
-.addr dl>*:nth-last-child(-n+3){border-bottom:0}
-.cp{background:none;border:0;color:var(--brand);font:800 12px var(--font-ui);cursor:pointer;padding:7px 0;align-self:stretch}
-footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
-</style>
+<title>Company Dashboard · JustBuy</title>
+<link rel="stylesheet" href="jb.css">
+<script src="jb.js" defer></script>
 </head>
 <body>
-<div class="wrap">
-
-  <!-- SIGN IN -->
-  <section id="gate" class="card">
-    <div style="float:right;margin-left:12px" data-theme-slot></div>
-    <h1><b>JustBuy</b> client dashboard</h1>
-    <p>Enter the company access code we sent you to see your shipments and use the price calculator.</p>
-    <form id="gateForm">
-      <label for="code" class="hint" style="margin:0;font-weight:700;color:var(--fg);font-size:13px">Company access code</label>
-      <input id="code" autocomplete="off" spellcheck="false" placeholder="e.g. JBC-7K2Q-X9MD-4FTR" required>
-      <label class="remember"><input type="checkbox" id="remember" checked> Keep me signed in on this device</label>
-      <button class="btn" id="gateBtn" type="submit">Open dashboard</button>
-    </form>
-    <div id="gateMsg"></div>
-  </section>
-
-  <!-- DASHBOARD -->
-  <div id="app" class="hidden">
-    <div class="top">
-      <div><div class="eyebrow">JustBuy client dashboard</div><h1 id="coName"></h1></div>
-      <div class="act"><span data-theme-slot></span><button class="btn ghost" id="refresh">Refresh</button><button class="btn ghost" id="signOut">Sign out</button></div>
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="index.html">Just<b>Buy</b></a>
+    <nav class="nav-links" aria-label="Main"><a href="index.html#track">Track</a></nav>
+    <div class="nav-actions">
+      <span data-theme-slot></span>
+      <button class="btn sm gray" id="refresh" type="button">Refresh</button>
+      <button class="btn sm gray" id="signOut" type="button">Log out</button>
     </div>
-    <nav class="tabs" role="tablist">
-      <button class="tab on" id="tabS" role="tab" aria-selected="true">Shipments</button>
-      <button class="tab" id="tabC" role="tab" aria-selected="false">Price calculator</button>
-      <button class="tab" id="tabA" role="tab" aria-selected="false">Shipping addresses</button>
-    </nav>
+  </div>
+</header>
 
-    <section id="viewS">
+<main class="container">
+  <div id="loading" style="padding:80px 0;text-align:center;color:var(--muted)">Loading your dashboard…</div>
+
+  <div id="app" class="hidden">
+    <div class="app-head"><div><p class="eyebrow" style="margin:0">Company dashboard</p><h1 id="coName"></h1></div></div>
+    <div class="tabbar">
+      <div class="seg" role="tablist" aria-label="Dashboard sections">
+        <button type="button" id="tabS" role="tab" aria-selected="true">Shipments</button>
+        <button type="button" id="tabC" role="tab" aria-selected="false">Price calculator</button>
+        <button type="button" id="tabA" role="tab" aria-selected="false">Addresses</button>
+      </div>
+    </div>
+
+    <section id="viewS" class="view" role="tabpanel">
       <div class="stats" id="stats"></div>
       <div class="toolbar">
         <input id="q" type="search" placeholder="Search tracking number, contents or route" aria-label="Search shipments">
@@ -185,24 +44,24 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
       <div class="ships" id="ships"></div>
     </section>
 
-    <section id="viewA" class="hidden">
-      <p style="margin:0 0 14px;color:var(--muted)">Use these addresses when you order from US or UK online stores. Copy each line exactly as shown, including the reference number after the name or street.</p>
+    <section id="viewA" class="view hidden" role="tabpanel">
+      <p class="caption" style="font-size:15px;margin:0 0 16px">Use these addresses when you order from US or UK online stores. Copy each line exactly as shown, including the reference number after the name or street.</p>
       <div class="agrid" id="addrs"><div class="empty">Loading addresses…</div></div>
     </section>
 
-    <section id="viewC" class="hidden">
+    <section id="viewC" class="view hidden" role="tabpanel">
       <div class="calc">
         <div class="col">
           <div class="card">
-            <h2 class="sec">Your item</h2>
+            <h3 class="sec" style="margin-bottom:14px">Your item</h3>
             <div class="fields">
-              <label for="price">Online price (USD)<input id="price" type="number" min="0" step="0.01" value="45" inputmode="decimal"></label>
+              <label for="price">Price (USD)<input id="price" type="number" min="0" step="0.01" value="45" inputmode="decimal"></label>
               <label for="qty">Quantity<input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
               <div class="wfield">
-                <div class="wlabel"><label for="weight" style="font-weight:700">Weight</label>
-                  <div class="seg" role="group" aria-label="Weight unit"><button type="button" id="u-kg" aria-pressed="true">kg</button><button type="button" id="u-lb" aria-pressed="false">lbs</button></div>
+                <div class="wlabel"><label for="weight">Weight</label>
+                  <div class="seg sm" role="group" aria-label="Weight unit"><button type="button" id="u-kg" aria-pressed="true">kg</button><button type="button" id="u-lb" aria-pressed="false">lbs</button></div>
                 </div>
-                <input id="weight" type="number" min="0" step="0.1" value="0.5" inputmode="decimal" style="font:600 17px var(--font-num);color:var(--edit-fg);background:var(--edit);border:1.5px solid var(--edit-line);border-radius:8px;padding:10px 12px;width:100%">
+                <input id="weight" type="number" min="0" step="0.1" value="0.5" inputmode="decimal">
               </div>
             </div>
             <p class="hint">Change the green fields. Everything else updates as you type.</p>
@@ -212,20 +71,17 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
             <span class="s">In USD</span><span class="sv" id="totUsd">–</span>
             <span class="s">With shipping on delivery</span><span class="sv" id="grandTsh">–</span>
           </div>
-          <div class="card">
-            <h2 class="sec">Rates used</h2>
-            <div class="rates">
-              <span class="chip">Exchange rate <span>2,700 TSh/$</span></span>
-              <span class="chip">Domestic tax <span>9%</span></span>
-              <span class="chip">Import duty <span>10%</span></span>
-              <span class="chip">JustBuy fee <span>2%</span></span>
-              <span class="chip">VAT <span>18%</span></span>
-            </div>
+          <div class="chips">
+            <span class="chip">Exchange rate <span>2,700 TSh/$</span></span>
+            <span class="chip">Domestic tax <span>9%</span></span>
+            <span class="chip">Import duty <span>10%</span></span>
+            <span class="chip">JustBuy fee <span>2%</span></span>
+            <span class="chip">VAT <span>18%</span></span>
           </div>
         </div>
         <div class="card">
-          <h2 class="sec">Breakdown</h2>
-          <div class="scroll"><table><tbody>
+          <h3 class="sec" style="margin-bottom:6px">Breakdown</h3>
+          <div class="scroll-x"><table class="bd"><tbody>
             <tr><td><span class="lbl">Online price</span><span class="f">Price × Quantity</span></td><td class="n" id="u1"></td><td class="n t" id="s1"></td></tr>
             <tr><td><span class="lbl">Domestic tax</span><span class="f">Online price × 9%</span></td><td class="n" id="u2"></td><td class="n t" id="s2"></td></tr>
             <tr><td><span class="lbl">Importation duties</span><span class="f">(Price + Domestic tax) × 10%</span></td><td class="n" id="u3"></td><td class="n t" id="s3"></td></tr>
@@ -239,9 +95,9 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
       </div>
     </section>
 
-    <footer>Questions about a shipment? Contact your JustBuy account manager.</footer>
+    <p class="foot">Questions about a shipment? Contact your JustBuy account manager.</p>
   </div>
-</div>
+</main>
 
 <script>
 const SB_URL = "https://icenxafytlodugspnzfj.supabase.co";
@@ -260,9 +116,9 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const fmtDT = d => new Date(d).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Africa/Dar_es_Salaam"});
 const fmtShort = d => new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",timeZone:"Africa/Dar_es_Salaam"});
 const fmtD = d => new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
-const store = { get(){ try { return localStorage.getItem(STORE); } catch { return null; } },
-                set(v){ try { localStorage.setItem(STORE, v); } catch {} },
-                clear(){ try { localStorage.removeItem(STORE); } catch {} } };
+const store = { get(){ try { return localStorage.getItem(STORE) || sessionStorage.getItem(STORE); } catch { return null; } },
+                clear(){ try { localStorage.removeItem(STORE); sessionStorage.removeItem(STORE); } catch {} } };
+const toLogin = reason => location.replace("login.html?as=company" + (reason ? "&reason=" + reason : ""));
 
 let code = null, data = null, filter = "all";
 
@@ -275,36 +131,25 @@ async function fetchDashboard(c){
   if (!res.ok) throw new Error("network");
   return res.json();
 }
-async function signIn(c, remember){
-  c = c.trim().toUpperCase().replace(/\s+/g, "");
-  $("gateBtn").disabled = true; $("gateMsg").innerHTML = "";
+async function signIn(c){
   try {
     const d = await fetchDashboard(c);
-    if (!d) {
-      store.clear(); showGate();
-      $("gateMsg").innerHTML = `<div class="err">That code didn't work. Check it exactly as we sent it, including the dashes. If it still fails, ask JustBuy for a new code.</div>`;
-      return;
-    }
-    code = c; data = d;
-    if (remember) store.set(c);
-    showApp();
+    if (!d) { store.clear(); return toLogin("expired"); }
+    code = c; data = d; showApp();
   } catch {
-    showGate();
-    $("gateMsg").innerHTML = `<div class="err">We couldn't reach JustBuy right now. Check your internet connection and try again.</div>`;
-  } finally { $("gateBtn").disabled = false; }
+    $("loading").innerHTML = `<div class="empty"><p style="margin:0 0 14px">We couldn't reach JustBuy. Check your internet connection and try again.</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
+  }
 }
-function showGate(){ $("gate").classList.remove("hidden"); $("app").classList.add("hidden"); }
 function showApp(){
-  $("gate").classList.add("hidden"); $("app").classList.remove("hidden");
+  $("loading").classList.add("hidden"); $("app").classList.remove("hidden");
   $("coName").textContent = data.company;
   document.title = data.company + " · JustBuy";
-  renderShipments(); calc();
+  renderShipments(); calc(); if (window.JB) JB.refreshSegments();
 }
-$("gateForm").onsubmit = e => { e.preventDefault(); signIn($("code").value, $("remember").checked); };
-$("signOut").onclick = () => { store.clear(); addrLoaded = false; tab("s"); code = data = null; $("code").value = ""; document.title = "JustBuy Client Dashboard"; showGate(); };
+$("signOut").onclick = () => { store.clear(); location.replace("login.html?as=company"); };
 $("refresh").onclick = async () => {
   $("refresh").disabled = true;
-  try { const d = await fetchDashboard(code); if (!d) { $("signOut").click(); $("gateMsg").innerHTML = `<div class="err">This code no longer works. Ask JustBuy for your new code.</div>`; return; } data = d; renderShipments(); }
+  try { const d = await fetchDashboard(code); if (!d) { store.clear(); return toLogin("expired"); } data = d; renderShipments(); }
   catch { $("fresh").textContent = "Couldn't refresh. Check your connection."; }
   finally { $("refresh").disabled = false; }
 };
@@ -330,7 +175,7 @@ async function loadAddresses(){
     addrLoaded = true;
     $("addrs").innerHTML = list.map(a => {
       const all = a.lines.map(l => l.value).join("\n");
-      return `<article class="addr"><header><h3>${esc(a.label)}</h3><button class="btn ghost" type="button" data-copy="${esc(all)}">Copy all</button></header>
+      return `<article class="addr"><header><h3>${esc(a.label)}</h3><button class="btn sm tinted" type="button" data-copy="${esc(all)}">Copy all</button></header>
         <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl></article>`;
     }).join("");
   } catch { $("addrs").innerHTML = `<div class="empty">We couldn't load the addresses. Check your connection and open this tab again.</div>`; }
@@ -423,9 +268,8 @@ $("u-kg").onclick = () => setUnit("kg"); $("u-lb").onclick = () => setUnit("lb")
 
 /* ---------- Start ---------- */
 const fromLink = decodeURIComponent(location.hash.replace(/^#/, ""));
-if (fromLink) history.replaceState(null, "", location.pathname); // keep the code out of the address bar
-const saved = fromLink || store.get();
-if (saved) { $("code").value = saved; signIn(saved, true); }
+if (/^JBC-/i.test(fromLink)) location.replace("login.html#" + encodeURIComponent(fromLink)); // old links: log in properly
+else { const saved = store.get(); if (saved) signIn(saved); else toLogin(); }
 </script>
 </body>
 </html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="theme.js"></script>
+<title>Log in · JustBuy</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="jb.css">
+<script src="jb.js" defer></script>
+<style>
+.auth{min-height:calc(100vh - 56px);display:grid;place-items:start center;padding:56px 22px 48px}
+.auth .card{width:100%;max-width:440px;padding:32px 28px}
+.auth h1{font-size:34px;line-height:1.1;letter-spacing:-.03em;margin:0 0 6px;text-align:center}
+.auth .sub{color:var(--muted);text-align:center;margin:0 0 22px;font-size:16px}
+.auth .seg{margin:0 auto 22px;display:grid;width:100%}
+.pane{animation:viewIn var(--t) var(--spring)}
+.alt{margin:20px 0 0;text-align:center;font-size:15px;color:var(--muted)}
+.steplabel{font-size:15px;margin:0 0 4px}
+@media (max-width:480px){.auth{padding-top:28px}.auth .card{padding:24px 18px}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="index.html">Just<b>Buy</b></a>
+    <div class="nav-actions" style="margin-left:auto"><span data-theme-slot></span></div>
+  </div>
+</header>
+
+<main class="auth">
+  <section class="card" aria-labelledby="h">
+    <h1 id="h">Log in</h1>
+    <p class="sub" id="sub">Track your packages and get your US &amp; UK addresses.</p>
+
+    <div class="seg" role="group" aria-label="Account type">
+      <button type="button" id="asI" aria-pressed="true">Individual</button>
+      <button type="button" id="asC" aria-pressed="false">Company</button>
+    </div>
+
+    <!-- Individual -->
+    <form id="indForm" class="form pane" novalidate>
+      <label class="field"><span>Phone number</span><input id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="0712 345 678" maxlength="30"></label>
+      <label class="field"><span>PIN</span><input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="••••"></label>
+      <label class="check"><input type="checkbox" id="keepI" checked> Keep me logged in on this device</label>
+      <button class="btn block lg" id="indBtn" type="submit">Log in</button>
+      <div id="indMsg" role="status" aria-live="polite"></div>
+      <p class="alt">New to JustBuy? <a href="index.html#register">Create a free account</a><br><span class="caption">Forgot your PIN? Ask JustBuy to reset it.</span></p>
+    </form>
+
+    <!-- Individual: first PIN -->
+    <form id="pinForm" class="form pane hidden" novalidate>
+      <p class="steplabel"><b>Create your PIN</b></p>
+      <p class="caption" style="margin:-8px 0 0">Your account doesn't have a PIN yet. Choose 4 to 6 digits. You'll use it with your phone number to log in.</p>
+      <div class="row2">
+        <label class="field"><span>New PIN</span><input id="np1" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"></label>
+        <label class="field"><span>Repeat PIN</span><input id="np2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"></label>
+      </div>
+      <button class="btn block lg" id="pinBtn" type="submit">Save PIN and log in</button>
+      <button class="btn block gray" id="pinBack" type="button">Back</button>
+      <div id="pinMsg" role="status" aria-live="polite"></div>
+    </form>
+
+    <!-- Company -->
+    <form id="coForm" class="form pane hidden" novalidate>
+      <label class="field"><span>Company access code</span><input id="code" class="code" autocomplete="off" spellcheck="false" placeholder="JBC-XXXX-XXXX-XXXX" maxlength="30"></label>
+      <label class="check"><input type="checkbox" id="keepC" checked> Keep me logged in on this device</label>
+      <button class="btn block lg" id="coBtn" type="submit">Log in</button>
+      <div id="coMsg" role="status" aria-live="polite"></div>
+      <p class="alt">Importing for a business and don't have a code yet? Ask JustBuy to set up your company account.</p>
+    </form>
+  </section>
+</main>
+
+<script>
+const SB_URL = "https://icenxafytlodugspnzfj.supabase.co";
+const SB_KEY = "sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
+const TOKEN_KEY = "justbuy-account-token", CODE_KEY = "justbuy-client-code";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const say = (id, text, kind = "err") => { $(id).innerHTML = text ? `<p class="note-${kind}">${text}</p>` : ""; };
+const params = new URLSearchParams(location.search);
+const next = (params.get("next") || "").replace(/[^a-z#-]/gi, "");
+let pendingPhone = "";
+
+async function rpc(fn, args) {
+  const res = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, { method: "POST", headers: { "Content-Type": "application/json", apikey: SB_KEY }, body: JSON.stringify(args) });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) { const e = new Error((data && data.message) || "Something went wrong. Please try again."); e.server = true; throw e; }
+  return data;
+}
+const netErr = e => e.server ? esc(e.message) : "We couldn't reach JustBuy. Check your internet connection and try again.";
+function store(key, val, keep) {
+  try { localStorage.removeItem(key); sessionStorage.removeItem(key); (keep ? localStorage : sessionStorage).setItem(key, val); } catch {}
+}
+
+/* Account type switch */
+function mode(m) {
+  $("asI").setAttribute("aria-pressed", m === "i"); $("asC").setAttribute("aria-pressed", m === "c");
+  $("indForm").classList.toggle("hidden", m !== "i"); $("pinForm").classList.add("hidden"); $("coForm").classList.toggle("hidden", m !== "c");
+  $("sub").innerHTML = m === "i" ? "Track your packages and get your US &amp; UK addresses." : "See all your company's shipments in one place.";
+  if (m === "c") params.set("as", "company"); else params.delete("as");
+  params.delete("reason");
+  history.replaceState(null, "", location.pathname + (params.toString() ? "?" + params : ""));
+  setTimeout(() => (m === "i" ? $("phone") : $("code")).focus({ preventScroll: true }), 0);
+}
+$("asI").onclick = () => mode("i"); $("asC").onclick = () => mode("c");
+
+/* Individual */
+$("indForm").onsubmit = async e => {
+  e.preventDefault();
+  const phone = $("phone").value.trim(), pin = $("pin").value.trim();
+  if (phone.replace(/\D/g, "").length < 9) { say("indMsg", "Enter the phone number you registered with."); $("phone").focus(); return; }
+  if (!pin) { say("indMsg", "Enter your PIN."); $("pin").focus(); return; }
+  say("indMsg", ""); $("indBtn").disabled = true; $("indBtn").textContent = "Logging in…";
+  try {
+    const r = await rpc("consumer_login", { p_phone: phone, p_pin: pin });
+    if (r.token) { store(TOKEN_KEY, r.token, $("keepI").checked); location.href = "account.html" + (next.startsWith("#") ? next : ""); return; }
+    if (r.error === "needs_pin") { pendingPhone = phone; $("indForm").classList.add("hidden"); $("pinForm").classList.remove("hidden"); $("np1").focus(); return; }
+    say("indMsg", {
+      not_registered: `We couldn't find an account with that phone number. Check it, or <a href="index.html#register">create a free account</a>.`,
+      wrong_pin: "That PIN isn't right. Try again.",
+      locked: "Too many wrong PINs. For your safety, logging in is paused for 15 minutes."
+    }[r.error] || "Logging in didn't work. Try again.");
+    if (r.error === "wrong_pin") { $("pin").select(); }
+  } catch (err) { say("indMsg", netErr(err)); }
+  finally { $("indBtn").disabled = false; $("indBtn").textContent = "Log in"; }
+};
+$("pinForm").onsubmit = async e => {
+  e.preventDefault();
+  const a = $("np1").value.trim(), b = $("np2").value.trim();
+  if (!/^\d{4,6}$/.test(a)) { say("pinMsg", "Your PIN must be 4 to 6 digits."); return; }
+  if (a !== b) { say("pinMsg", "The two PINs don't match."); return; }
+  $("pinBtn").disabled = true;
+  try { const r = await rpc("consumer_set_first_pin", { p_phone: pendingPhone, p_pin: a }); store(TOKEN_KEY, r.token, $("keepI").checked); location.href = "account.html"; }
+  catch (err) { say("pinMsg", netErr(err)); }
+  finally { $("pinBtn").disabled = false; }
+};
+$("pinBack").onclick = () => { $("pinForm").classList.add("hidden"); $("indForm").classList.remove("hidden"); say("pinMsg", ""); };
+
+/* Company */
+$("coForm").onsubmit = async e => {
+  e.preventDefault();
+  const code = $("code").value.trim().toUpperCase().replace(/\s+/g, "");
+  if (code.length < 12) { say("coMsg", "Enter the full access code we sent you, including the dashes."); $("code").focus(); return; }
+  say("coMsg", ""); $("coBtn").disabled = true; $("coBtn").textContent = "Logging in…";
+  try {
+    const d = await rpc("company_dashboard", { p_code: code });
+    if (!d) { say("coMsg", "That code didn't work. Check it exactly as we sent it. If it still fails, ask JustBuy for a new code."); return; }
+    store(CODE_KEY, code, $("keepC").checked); location.href = "dashboard.html";
+  } catch (err) { say("coMsg", netErr(err)); }
+  finally { $("coBtn").disabled = false; $("coBtn").textContent = "Log in"; }
+};
+
+/* Start */
+const reason = params.get("reason");
+const linkCode = /^#JBC-/i.test(location.hash) ? decodeURIComponent(location.hash.slice(1)) : ""; // old dashboard links carry the code
+const startAs = linkCode || params.get("as") === "company" ? "c" : "i";
+mode(startAs);
+if (reason === "expired") say(startAs === "c" ? "coMsg" : "indMsg", "Please log in again.");
+if (linkCode) { $("code").value = linkCode; $("coForm").requestSubmit(); }
+</script>
+</body>
+</html>
