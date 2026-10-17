@@ -217,7 +217,7 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 const SUPABASE_URL = "https://icenxafytlodugspnzfj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
 const TRACK_PAGE_URL = new URL("track.html", location.href).href; // track.html sits next to this page on the same site
-const DASHBOARD_URL = new URL("dashboard.html", location.href).href; // client dashboard, same site
+const DASHBOARD_URL = new URL("login.html?as=company", location.href).href; // company log-in page, same site
 const STATUSES = ["Order received","Purchased from supplier","At origin warehouse","Departed origin","In transit","Arrived in Tanzania","Customs clearance","Ready for collection","Out for delivery","Delivered","On hold"];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
