@@ -3,16 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="theme.js"></script>
 <title>Track Your Shipment · JustBuy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
 :root{
+  --err-bg:#fdecea; --err-fg:#8c1d18; --ok-bg:#e5f3e6; --okmsg-fg:#1e5a22; --warn-bg:#fff2dc; --brand-bg:#fdeceb; --pill-bg:#eeeeee; --pill-fg:#333333; --warn:#b26a00;
+
   --bg:#f6f4f3; --surface:#fff; --fg:#231a19; --muted:#6e6360; --line:#e6dfdd; --soft:#faf7f6;
   --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#fff; --ok:#2f7d32; --warn:#b26a00;
   --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}
+
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
 .wrap{max-width:680px;margin:0 auto;padding:32px 16px 56px;display:flex;flex-direction:column;gap:18px}
@@ -27,7 +33,7 @@ form.search button{background:var(--brand);color:var(--brand-fg);border:0;border
 form.search button:hover{background:var(--brand-dark)}
 form.search button:disabled{opacity:.6}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
-.notice{padding:14px 16px;border-radius:10px;background:#fdecea;color:#8c1d18;font-size:14px}
+.notice{padding:14px 16px;border-radius:10px;background:var(--err-bg);color:var(--err-fg);font-size:14px}
 .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .tn{font-family:var(--font-num);font-size:14px;color:var(--muted)}
 .status{font-size:24px;font-weight:800;margin:2px 0 0;color:var(--brand)}
@@ -69,7 +75,8 @@ footer{color:var(--muted);font-size:13px;text-align:center}
 </head>
 <body>
 <div class="wrap">
-  <header>
+  <header style="position:relative;padding-right:52px">
+    <div style="position:absolute;top:0;right:0" data-theme-slot></div>
     <h1>Track your <b>JustBuy</b> shipment</h1>
     <p class="lead">Enter the tracking number we sent you.</p>
   </header>

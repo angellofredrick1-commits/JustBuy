@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="theme.js"></script>
 <meta name="robots" content="noindex,nofollow">
 <title>JustBuy Shipments Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,12 +11,17 @@
 <style>
 /* ====== SETTINGS ====== */
 :root{
+  --err-bg:#fdecea; --err-fg:#8c1d18; --ok-bg:#e5f3e6; --okmsg-fg:#1e5a22; --warn-bg:#fff2dc; --brand-bg:#fdeceb; --pill-bg:#eeeeee; --pill-fg:#333333; --warn:#b26a00;
+
   --bg:#f6f4f3; --surface:#fff; --fg:#231a19; --muted:#6e6360; --line:#e6dfdd; --soft:#faf7f6;
   --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#fff;
   --ok:#2f7d32; --warn:#b26a00; --hold:#8a3ffc;
   --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}
+
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -42,8 +48,8 @@ input:focus,select:focus,textarea:focus,.btn:focus-visible{outline:3px solid col
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:640px){.g2,.g3{grid-template-columns:1fr}}
 .msg{font-size:13px;padding:8px 12px;border-radius:8px;margin-top:10px}
-.msg.err{background:#fdecea;color:#8c1d18}
-.msg.ok{background:#e8f4ea;color:#1e5a22}
+.msg.err{background:var(--err-bg);color:var(--err-fg)}
+.msg.ok{background:var(--ok-bg);color:var(--okmsg-fg)}
 /* Login */
 #login{max-width:400px;margin:60px auto}
 #login h2{margin:0 0 4px;font-size:20px}
@@ -63,10 +69,10 @@ input:focus,select:focus,textarea:focus,.btn:focus-visible{outline:3px solid col
 .item .tn{font-family:var(--font-num);font-weight:600;font-size:13px}
 .item .cu{font-weight:700;grid-column:1}
 .item .dt{color:var(--muted);font-size:12px;grid-column:1/-1}
-.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:#eee;color:#333;white-space:nowrap;align-self:start}
-.pill.s-progress{background:#fdeceb;color:var(--brand-dark)}
-.pill.s-done{background:#e5f3e6;color:var(--ok)}
-.pill.s-hold{background:#fff2dc;color:var(--warn)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--pill-bg);color:var(--pill-fg);white-space:nowrap;align-self:start}
+.pill.s-progress{background:var(--brand-bg);color:var(--brand-dark)}
+.pill.s-done{background:var(--ok-bg);color:var(--ok)}
+.pill.s-hold{background:var(--warn-bg);color:var(--warn)}
 .empty{color:var(--muted);text-align:center;padding:28px 8px;font-size:14px}
 .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .detail-head h2{margin:0;font-size:20px}
@@ -90,6 +96,12 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .code{font:600 20px var(--font-num);letter-spacing:.06em;background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:12px 14px;word-break:break-all}
 .check{flex-direction:row;align-items:center;gap:8px;display:flex}
 .check input{width:auto}
+.owner-seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.owner-seg button{border:0;background:var(--surface);color:var(--muted);font-weight:800;font-size:13px;padding:5px 12px;cursor:pointer}
+.owner-seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-fg)}
+.match{font-size:13px;margin-top:6px;min-height:20px}
+.match.ok{color:var(--ok);font-weight:700}
+.match.bad{color:var(--brand);font-weight:700}
 .rtable{width:100%;border-collapse:collapse;font-size:14px}
 .rtable th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 .rtable td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -102,7 +114,7 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 <div class="wrap">
   <header class="top">
     <h1>JustBuy · Shipments Admin</h1>
-    <div class="who hidden" id="who"><span id="whoEmail"></span><button class="btn small" id="signOut">Sign out</button></div>
+    <div style="display:flex;gap:10px;align-items:center"><span data-theme-slot></span><div class="who hidden" id="who"><span id="whoEmail"></span><button class="btn small" id="signOut">Sign out</button></div></div>
   </header>
 
   <!-- LOGIN -->
@@ -128,7 +140,7 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 
     <div class="card hidden" id="regView">
       <div class="toolbar"><input id="rSearch" type="search" placeholder="Search name, phone, email or city"><span id="rCount" style="align-self:center;color:var(--muted);font-size:13px"></span></div>
-      <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Registered</th><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Shops</th></tr></thead><tbody id="rBody"></tbody></table></div>
+      <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Customer</th><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Packages</th><th>Registered</th><th></th></tr></thead><tbody id="rBody"></tbody></table></div>
     </div>
 
     <div class="layout hidden" id="compView">
@@ -164,7 +176,16 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
     </div>
     <div class="grid g2">
       <label>Tracking number<input id="f_tracking_no" required pattern="[A-Za-z0-9\-]{6,30}" title="6–30 letters, numbers or dashes"></label>
-      <label>Company<select id="f_company_id" required></select></label>
+      <div>
+        <div class="owner-seg" role="group" aria-label="Package belongs to">
+          <button type="button" id="ownC" aria-pressed="true">Company</button><button type="button" id="ownI" aria-pressed="false">Individual</button>
+        </div>
+        <label id="ownCompany">Company<select id="f_company_id"></select></label>
+        <div id="ownPerson" class="hidden">
+          <label>Customer phone number<input id="f_phone" type="tel" placeholder="e.g. 0712 345 678" autocomplete="off"></label>
+          <div id="f_match" class="match"></div>
+        </div>
+      </div>
     </div>
     <div class="grid" style="margin-top:12px">
       <label>What's in the shipment <span class="opt">optional</span><input id="f_description" placeholder="e.g. 40 cartons of phone accessories"></label>
@@ -286,7 +307,7 @@ function newTrackingNo(){
 }
 
 /* ---------- Create / edit form ---------- */
-const FIELDS = ["tracking_no","company_id","description","origin","destination","pieces","weight_kg","eta","customer_note","internal_note"];
+const FIELDS = ["tracking_no","description","origin","destination","pieces","weight_kg","eta","customer_note","internal_note"];
 function renderForm(s){
   $("detail").innerHTML = ""; $("detail").appendChild($("tplForm").content.cloneNode(true));
   $("fTitle").textContent = s ? "Edit details" : "New shipment";
@@ -295,6 +316,31 @@ function renderForm(s){
     active.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   FIELDS.forEach(k => $("f_"+k).value = s ? (s[k] ?? "") : "");
   if (!s) $("f_tracking_no").value = newTrackingNo();
+  // Owner: a company, or an individual customer found by phone number
+  let owner = s && s.registration_id ? "i" : "c", person = null;
+  const setOwner = o => { owner = o;
+    $("ownC").setAttribute("aria-pressed", o==="c"); $("ownI").setAttribute("aria-pressed", o==="i");
+    $("ownCompany").classList.toggle("hidden", o!=="c"); $("ownPerson").classList.toggle("hidden", o!=="i"); };
+  $("ownC").onclick = () => setOwner("c"); $("ownI").onclick = () => { setOwner("i"); $("f_phone").focus(); };
+  $("f_company_id").value = s?.company_id || "";
+  let lookupSeq = 0;
+  async function findPerson(){
+    const digits = $("f_phone").value.replace(/\D/g,""), seq = ++lookupSeq; person = null;
+    const box = $("f_match"); box.className = "match";
+    if (digits.length < 9) { box.textContent = digits ? "Keep typing the phone number…" : ""; return; }
+    const key = digits.slice(-9);
+    const { data } = await sb.from("registrations").select("id,full_name,customer_no,phone").eq("phone_key", key).maybeSingle();
+    if (seq !== lookupSeq) return;
+    if (data) { person = data; box.className = "match ok"; box.textContent = `✓ ${data.full_name} · ${data.customer_no} · ${data.phone}`; }
+    else { box.className = "match bad"; box.textContent = "No registered customer with this phone number. Ask them to register on the website first."; }
+  }
+  $("f_phone").oninput = findPerson;
+  setOwner(owner);
+  if (s && s.registration_id) {
+    sb.from("registrations").select("id,full_name,customer_no,phone").eq("id", s.registration_id).maybeSingle()
+      .then(({ data }) => { if (data) { $("f_phone").value = data.phone; findPerson(); } });
+  }
+  renderForm.prefillPhone = p => { setOwner("i"); $("f_phone").value = p; findPerson(); };
   if (s) $("fDelete").classList.remove("hidden");
   $("fCancel").onclick = () => s ? openShipment(s.id) : ($("detail").innerHTML = '<div class="empty">Select a shipment, or create a new one.</div>');
   $("fDelete").onclick = () => confirmDelete(s);
@@ -303,6 +349,13 @@ function renderForm(s){
     const row = {};
     FIELDS.forEach(k => { const v = $("f_"+k).value.trim(); row[k] = v === "" ? null : v; });
     row.tracking_no = row.tracking_no.toUpperCase();
+    if (owner === "c") {
+      if (!$("f_company_id").value) { msg("fMsg","Choose the company this package belongs to."); return; }
+      row.company_id = $("f_company_id").value; row.registration_id = null;
+    } else {
+      if (!person) { msg("fMsg","Enter the phone number of a registered customer, or switch to Company."); $("f_phone").focus(); return; }
+      row.registration_id = person.id; row.company_id = null;
+    }
     if (row.pieces != null) row.pieces = parseInt(row.pieces,10);
     if (row.weight_kg != null) row.weight_kg = parseFloat(row.weight_kg);
     $("fSave").disabled = true; msg("fMsg","");
@@ -417,19 +470,32 @@ $("tabReg").onclick = () => { setTab("reg"); loadRegs(); };
 /* ---------- Registrations (from the landing page) ---------- */
 let regs = [];
 async function loadRegs(){
-  $("rBody").innerHTML = `<tr><td colspan="6" class="dt">Loading…</td></tr>`;
-  const { data, error } = await sb.from("registrations").select("*").order("created_at",{ascending:false}).limit(2000);
-  if (error) { $("rBody").innerHTML = `<tr><td colspan="6"><div class="msg err">${esc(error.message)}</div></td></tr>`; return; }
+  $("rBody").innerHTML = `<tr><td colspan="8" class="dt">Loading…</td></tr>`;
+  const { data, error } = await sb.from("registrations").select("id,customer_no,full_name,phone,email,city,shops,created_at,locked_until,shipments(count)").order("created_at",{ascending:false}).limit(2000);
+  if (error) { $("rBody").innerHTML = `<tr><td colspan="8"><div class="msg err">${esc(error.message)}</div></td></tr>`; return; }
   regs = data; renderRegs();
 }
 function renderRegs(){
   const q = $("rSearch").value.trim().toLowerCase();
-  const rows = regs.filter(r => !q || [r.full_name,r.phone,r.email,r.city,r.shops].some(v => (v||"").toLowerCase().includes(q)));
+  const rows = regs.filter(r => !q || [r.customer_no,r.full_name,r.phone,r.email,r.city,r.shops].some(v => (v||"").toLowerCase().includes(q)));
   $("rCount").textContent = `${rows.length} of ${regs.length} registration${regs.length===1?"":"s"}`;
-  $("rBody").innerHTML = rows.length ? rows.map(r => `<tr><td class="dt">${fmtDT(r.created_at)}</td><td>${esc(r.full_name)}</td><td class="ph">${esc(r.phone)}</td><td>${esc(r.email||"")}</td><td>${esc(r.city||"")}</td><td>${esc(r.shops||"")}</td></tr>`).join("")
-    : `<tr><td colspan="6" class="dt">${regs.length ? "No registrations match." : "No registrations yet. They'll appear here when people sign up on the home page."}</td></tr>`;
+  $("rBody").innerHTML = rows.length ? rows.map(r => { const n = r.shipments?.[0]?.count ?? 0; return `<tr>
+      <td class="ph">${esc(r.customer_no)}</td><td>${esc(r.full_name)}${r.shops?`<div class="dt" style="font-size:12px">${esc(r.shops)}</div>`:""}</td>
+      <td class="ph">${esc(r.phone)}</td><td>${esc(r.email||"")}</td><td>${esc(r.city||"")}</td><td>${n}</td><td class="dt">${fmtDT(r.created_at)}</td>
+      <td style="white-space:nowrap"><button class="btn small primary" data-newpkg="${esc(r.phone)}">+ Package</button> <button class="btn small" data-pkgs="${esc(r.customer_no)}">Packages</button> <button class="btn small" data-reset="${r.id}">Reset PIN</button></td></tr>`; }).join("")
+    : `<tr><td colspan="8" class="dt">${regs.length ? "No registrations match." : "No registrations yet. They'll appear here when people sign up on the home page."}</td></tr>`;
 }
 $("rSearch").oninput = renderRegs;
+$("rBody").addEventListener("click", async e => {
+  const nb = e.target.closest("[data-newpkg]"), pk = e.target.closest("[data-pkgs]"), rs = e.target.closest("[data-reset]");
+  if (nb) { setTab("ship"); selectedId = null; renderList(); renderForm(null); renderForm.prefillPhone(nb.dataset.newpkg); }
+  if (pk) { setTab("ship"); $("search").value = pk.dataset.pkgs; renderList(); }
+  if (rs) {
+    if (!rs.dataset.armed) { rs.dataset.armed = "1"; rs.textContent = "Click again to reset"; return; }
+    const { error } = await sb.rpc("admin_reset_pin", { p_reg: rs.dataset.reset });
+    rs.textContent = error ? "Couldn't reset" : "PIN reset ✓"; rs.disabled = !error; delete rs.dataset.armed;
+  }
+});
 $("tabShip").onclick = () => setTab("ship");
 $("tabComp").onclick = () => { setTab("comp"); renderCompanies(); };
 
