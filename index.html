@@ -48,7 +48,9 @@ a{color:var(--brand)}
 .bar nav{display:flex;gap:18px;margin-left:auto}
 .bar nav a{color:var(--muted);text-decoration:none;font-weight:700;font-size:15px}
 .bar nav a:hover{color:var(--fg)}
-@media (max-width:760px){.bar nav{display:none}.bar .btn{margin-left:auto}}
+.bar nav a,.bar .btn{white-space:nowrap}.bar .sm{display:none}
+@media (max-width:760px){.bar nav{gap:0}.bar nav a:not(.keep){display:none}.bar .btn{margin-left:0}}
+@media (max-width:480px){.bar .wrap{gap:12px}.bar .lg{display:none}.bar .sm{display:inline}}
 
 /* Hero */
 .hero{padding-block:56px 64px}
@@ -207,9 +209,10 @@ footer.site a{color:var(--muted)}
       <a href="#how">How it works</a>
       <a href="#prices">Prices</a>
       <a href="#track">Track</a>
+      <a class="keep" href="addresses.html">My addresses</a>
       <a href="dashboard.html">Business login</a>
     </nav>
-    <a class="btn small" href="#register">Get your address</a>
+    <a class="btn small" href="#register"><span class="lg">Get your address</span><span class="sm">Register</span></a>
   </div>
 </header>
 
@@ -294,10 +297,11 @@ footer.site a{color:var(--muted)}
           </div>
           <button class="btn" id="rBtn" type="submit">Register and show my addresses</button>
           <p class="fine">We only use your details to contact you about your parcels.</p>
+          <p class="fine">Already registered? <a class="ext" href="addresses.html">Find your addresses</a></p>
           <div id="rMsg"></div>
         </form>
         <div id="regDone" class="hidden">
-          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Use these addresses at checkout.</div></div></div>
+          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Use these addresses at checkout. You can find them again any time under <a class="ext" href="addresses.html">My addresses</a>.</div></div></div>
           <div class="addr-grid" id="addrs"></div>
           <div class="tips">
             <strong>Before you order</strong>
@@ -392,7 +396,7 @@ footer.site a{color:var(--muted)}
 </main>
 
 <footer class="site">
-  <div class="wrap"><span>© <span id="yr"></span> JustBuy · justbuy.shop</span><span><a href="#register">Register</a> · <a href="#prices">Prices</a> · <a href="#track">Track</a> · <a href="dashboard.html">Business login</a></span></div>
+  <div class="wrap"><span>© <span id="yr"></span> JustBuy · justbuy.shop</span><span><a href="#register">Register</a> · <a href="addresses.html">My addresses</a> · <a href="#prices">Prices</a> · <a href="#track">Track</a> · <a href="dashboard.html">Business login</a></span></div>
 </footer>
 
 <script>
