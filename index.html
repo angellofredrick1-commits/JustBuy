@@ -1,69 +1,178 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>JustBuy Price Calculator</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JustBuy · Shop US &amp; UK stores, delivered to Tanzania</title>
+<meta name="description" content="Register free with JustBuy to get US and UK shipping addresses. Shop Amazon, eBay and more, and we bring your orders to Tanzania with clear, upfront pricing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: one narrow column — inputs card on top, itemised breakdown below, total as the anchor */
+/* Layout: sticky top bar → hero with a shipping-label visual → how it works → why → register (reveals addresses) → price calculator → tracking → business band → footer */
 :root{
-  --bg:#f7f5f4; --surface:#ffffff; --fg:#231a19; --muted:#6e6360; --line:#e7e0de;
-  --brand:#c0302a; --brand-fg:#ffffff;
-  --edit:#e6f4d6; --edit-line:#7fb84a; --edit-fg:#1f3d0c;
+  --bg:#f7f5f4; --surface:#ffffff; --fg:#231a19; --muted:#6e6360; --line:#e7e0de; --soft:#fbf3f2;
+  --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#ffffff; --ink:#1d1514; --ink-fg:#f6efed;
+  --edit:#e6f4d6; --edit-line:#7fb84a; --edit-fg:#1f3d0c; --ok:#2f7d32;
   --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f;
-  --brand:#e5574f; --brand-fg:#ffffff;
-  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; color-scheme:dark}}
+  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e;
+  --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed;
+  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f;
-  --brand:#e5574f; --brand-fg:#ffffff;
-  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; color-scheme:dark}
+  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e;
+  --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed;
+  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:15px;line-height:1.5}
-.wrap{max-width:560px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;gap:20px}
-header h1{margin:0;font-size:26px;font-weight:800;color:var(--brand);text-wrap:balance}
-header p{margin:4px 0 0;color:var(--muted)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
-.card h2{margin:0 0 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--font-ui)}
+a{color:var(--brand)}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px}
+.hidden{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:800 16px var(--font-ui);background:var(--brand);color:var(--brand-fg);border:0;border-radius:10px;padding:12px 22px;cursor:pointer;min-height:48px;text-decoration:none}
+.btn:hover{background:var(--brand-dark)}
+.btn:disabled{opacity:.6;cursor:progress}
+.btn.line{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+.btn.line:hover{border-color:var(--fg)}
+.btn.small{font-size:14px;padding:8px 14px;min-height:38px}
+
+/* Top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.logo{font-weight:900;font-size:22px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.logo b{color:var(--brand)}
+.bar nav{display:flex;gap:18px;margin-left:auto}
+.bar nav a{color:var(--muted);text-decoration:none;font-weight:700;font-size:15px}
+.bar nav a:hover{color:var(--fg)}
+@media (max-width:760px){.bar nav{display:none}.bar .btn{margin-left:auto}}
+
+/* Hero */
+.hero{padding-block:56px 64px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center}
+@media (max-width:860px){.hero .wrap{grid-template-columns:1fr;gap:36px}.hero{padding-block:36px 44px}}
+.eyebrow{font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
+.hero h1{font-size:clamp(34px,5.4vw,56px);line-height:1.05;margin:10px 0 16px;font-weight:900;letter-spacing:-.02em;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--brand)}
+.hero p.lead{font-size:19px;color:var(--muted);margin:0 0 26px;max-width:34em}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.trust{display:flex;gap:20px;flex-wrap:wrap;margin-top:26px;font-size:14px;color:var(--muted);font-weight:700}
+.trust span::before{content:"✓";color:var(--ok);margin-right:6px;font-weight:900}
+
+/* Shipping label visual */
+.label{background:var(--surface);border:1.5px solid var(--fg);border-radius:6px;padding:0;font-family:var(--font-num);font-size:13px;transform:rotate(-2deg);box-shadow:10px 12px 0 color-mix(in srgb,var(--brand) 22%,transparent);max-width:420px;justify-self:center;width:100%}
+.label .top{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--fg);padding:10px 14px}
+.label .top b{font-family:var(--font-ui);font-weight:900;font-size:18px}
+.label .top b span{color:var(--brand)}
+.label .route{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:14px;border-bottom:1.5px dashed var(--line)}
+.label .route div{display:flex;flex-direction:column}
+.label .route small{color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.label .route strong{font-size:22px}
+.label .arrow{color:var(--brand);font-size:22px}
+.label .to{padding:14px;border-bottom:1.5px dashed var(--line);line-height:1.9}
+.label .to small{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase;line-height:1.4}
+.blur{display:inline-block;height:10px;border-radius:3px;background:var(--line);vertical-align:middle}
+.label .bars{padding:12px 14px;display:flex;gap:3px;align-items:flex-end;height:58px}
+.label .bars i{display:block;background:var(--fg);height:100%}
+.label .foot{display:flex;justify-content:space-between;padding:0 14px 12px;color:var(--muted);font-size:11px}
+
+/* Sections */
+section.block{padding-block:64px}
+section.block.alt{background:var(--surface);border-block:1px solid var(--line)}
+.head{max-width:640px;margin-bottom:32px}
+.head h2{font-size:clamp(28px,3.6vw,38px);line-height:1.1;margin:8px 0 10px;font-weight:900;letter-spacing:-.01em;text-wrap:balance}
+.head p{color:var(--muted);margin:0;font-size:17px}
+
+/* Steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;counter-reset:s}
+@media (max-width:860px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+.steps li{counter-increment:s;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:20px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--brand);color:var(--brand-fg);font-weight:900;margin-bottom:12px}
+.steps h3{margin:0 0 6px;font-size:18px}
+.steps p{margin:0;color:var(--muted);font-size:15px}
+
+/* Why */
+.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+@media (max-width:760px){.why{grid-template-columns:1fr}}
+.why h3{margin:0 0 6px;font-size:19px}
+.why p{margin:0;color:var(--muted)}
+.why .mark{font:600 13px var(--font-num);color:var(--brand);display:block;margin-bottom:8px}
+
+/* Register */
+.reg{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:36px;align-items:start}
+@media (max-width:860px){.reg{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px}
+.form{display:grid;gap:14px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:480px){.form .two{grid-template-columns:1fr}}
+.form label{display:block;font-weight:800;font-size:14px;min-width:0}
+.form label .opt{font-weight:400;color:var(--muted);margin-left:4px}
+.form label input{display:block;margin-top:6px}
+.form input{font:16px var(--font-ui);padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);width:100%}
+.form input:focus{border-color:var(--brand);outline:3px solid color-mix(in srgb,var(--brand) 20%,transparent)}
+.fine{font-size:13px;color:var(--muted);margin:0}
+.err{padding:10px 12px;border-radius:8px;background:#fdecea;color:#8c1d18;font-size:14px;margin:0}
+.reg-points{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:10px}
+.reg-points li{padding-left:28px;position:relative}
+.reg-points li::before{content:"";position:absolute;left:0;top:6px;width:16px;height:16px;border-radius:4px;background:var(--brand)}
+.addr-grid{display:grid;gap:16px}
+.addr{background:var(--surface);border:1.5px solid var(--fg);border-radius:12px;overflow:hidden}
+.addr header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--fg);background:var(--soft)}
+.addr header h3{margin:0;font-size:17px}
+.addr dl{margin:0;padding:6px 16px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 12px;align-items:center}
+.addr dt{font-size:12px;color:var(--muted);font-weight:700;padding:7px 0}
+.addr dd{margin:0;font:600 14px var(--font-num);overflow-wrap:anywhere;padding:7px 0}
+.addr dt,.addr dd,.addr .cp{border-bottom:1px solid var(--line)}
+.addr dl>*:nth-last-child(-n+3){border-bottom:0}
+.cp{background:none;border:0;color:var(--brand);font:800 12px var(--font-ui);cursor:pointer;padding:7px 0;align-self:stretch}
+.done-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.done-head .tick{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--ok);color:#fff;font-weight:900;flex:none}
+.tips{margin:16px 0 0;padding:16px 18px;border-radius:12px;background:var(--soft);font-size:15px}
+.tips ul{margin:6px 0 0;padding-left:20px}
+
+/* Calculator (reused) */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.calc{grid-template-columns:1fr}}
+.calc .col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h3.sec{margin:0 0 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 @media (max-width:480px){.fields{grid-template-columns:1fr}}
-label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px;min-width:0}
-input{font:600 17px var(--font-num);color:var(--edit-fg);background:var(--edit);border:1.5px solid var(--edit-line);border-radius:8px;padding:10px 12px;width:100%;font-variant-numeric:tabular-nums}
-input:focus{outline:3px solid color-mix(in srgb,var(--edit-line) 40%,transparent);outline-offset:1px}
+.fields label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:13px;min-width:0}
+.fields input,#weight{font:600 17px var(--font-num);color:var(--edit-fg);background:var(--edit);border:1.5px solid var(--edit-line);border-radius:8px;padding:10px 12px;width:100%;font-variant-numeric:tabular-nums}
 .wfield{display:flex;flex-direction:column;gap:6px;min-width:0}
 .wlabel{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.wlabel label{font-weight:600;font-size:13px}
+.wlabel label{font-weight:700;font-size:13px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.seg button{font:700 11px var(--font-ui);border:0;background:var(--surface);color:var(--muted);padding:2px 8px;cursor:pointer}
+.seg button{font:800 11px var(--font-ui);border:0;background:var(--surface);color:var(--muted);padding:2px 8px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-fg)}
-.seg button:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
-.hint{font-size:12px;color:var(--muted);margin-top:10px}
-.hint b{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--edit);border:1.5px solid var(--edit-line);vertical-align:-1px;margin-right:4px}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+.total{background:var(--brand);color:var(--brand-fg);border-radius:14px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
+.total .k{font-weight:800}
+.total .v{font:600 24px var(--font-num);text-align:right}
+.total .s{opacity:.85;font-size:13px}
+.total .sv{font:400 14px var(--font-num);text-align:right;opacity:.92}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:top}
-td.n{text-align:right;font-family:var(--font-num);white-space:nowrap;padding-left:12px}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-family:var(--font-num);white-space:nowrap;padding-left:10px}
 td.t{color:var(--muted);font-size:13px}
-.lbl{font-weight:600}
-.f{display:block;font-size:12px;color:var(--muted)}
-tr.sum td{border-bottom:none;padding-top:12px}
-.total{background:var(--brand);color:var(--brand-fg);border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
-.total .k{font-weight:700}
-.total .v{font:600 22px var(--font-num);text-align:right}
-.total .s{opacity:.85;font-size:13px}
-.total .sv{font:400 14px var(--font-num);text-align:right;opacity:.9}
+.lbl{font-weight:700} .f{display:block;font-size:12px;color:var(--muted)}
 .rates{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted)}
 .chip span{font-family:var(--font-num);color:var(--fg)}
 .table-scroll{overflow-x:auto}
-/* Shipment tracking */
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Tracking (reused) */
+.trk{max-width:720px}
 .trk-form{display:flex;gap:10px;flex-wrap:wrap}
-.trk-form input{flex:1 1 220px;font-size:16px}
-.btn{font:800 15px var(--font-ui);background:var(--brand);color:var(--brand-fg);border:0;border-radius:8px;padding:10px 18px;cursor:pointer;min-height:44px}
-.btn:disabled{opacity:.6;cursor:progress}
-.btn:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:2px}
-.trk-msg{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.trk-form input{flex:1 1 240px;font:600 16px var(--font-num);padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);min-width:0;text-transform:uppercase}
+.trk-form input::placeholder{text-transform:none;font-family:var(--font-ui);font-weight:400}
+.trk-msg{margin:12px 0 0;font-size:14px;color:var(--muted)}
 .trk-msg:empty{display:none}
 .trk-msg.err{color:var(--brand);font-weight:700}
 .demo{margin:14px 0 0;padding:8px 12px;border-radius:8px;border:1px dashed var(--line);font-size:13px;color:var(--muted)}
@@ -76,85 +185,215 @@ tr.sum td{border-bottom:none;padding-top:12px}
 .tl li:last-child{padding-bottom:0}
 .tl li::before{content:"";position:absolute;left:-29px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--line);border:3px solid var(--surface);box-sizing:border-box}
 .tl li:first-child::before{background:var(--brand)}
-.tl .d{font-weight:700}
-.tl .m{font-size:13px;color:var(--muted)}
-.tl .c{font-size:13px;margin-top:2px}
-.ext{color:var(--brand);font-weight:700}
+.tl .d{font-weight:700} .tl .m{font-size:13px;color:var(--muted)} .tl .c{font-size:13px;margin-top:2px}
+.ext{color:var(--brand);font-weight:800}
+
+/* Business band */
+.biz{background:var(--ink);color:var(--ink-fg);border-radius:20px;padding:36px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center}
+@media (max-width:760px){.biz{grid-template-columns:1fr;padding:26px}}
+.biz h2{margin:0 0 8px;font-size:28px;font-weight:900}
+.biz p{margin:0;opacity:.8;max-width:40em}
+footer.site{padding-block:36px;color:var(--muted);font-size:14px}
+footer.site .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer.site a{color:var(--muted)}
 </style>
+</head>
+<body>
 
-<div class="wrap">
-  <header>
-    <h1>JustBuy Import Price Calculator</h1>
-    <p>Enter the item details in the green fields. Everything else updates automatically.</p>
-  </header>
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#top">Just<b>Buy</b></a>
+    <nav aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#prices">Prices</a>
+      <a href="#track">Track</a>
+      <a href="dashboard.html">Business login</a>
+    </nav>
+    <a class="btn small" href="#register">Get your address</a>
+  </div>
+</header>
 
-  <section class="card">
-    <h2>Your item</h2>
-    <div class="fields">
-      <label for="price">Online price (USD)<input id="price" type="number" min="0" step="0.01" value="45" inputmode="decimal"></label>
-      <label for="qty">Quantity<input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
-      <div class="wfield">
-        <div class="wlabel"><label for="weight">Weight</label>
-          <div class="seg" role="group" aria-label="Weight unit">
-            <button type="button" id="u-kg" aria-pressed="true">kg</button>
-            <button type="button" id="u-lb" aria-pressed="false">lbs</button>
-          </div>
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">USA · UK → Tanzania</div>
+        <h1>Shop US &amp; UK stores. <em>We bring it home.</em></h1>
+        <p class="lead">Register free and get JustBuy shipping addresses in the United States and the United Kingdom. Order from the shops you like, send it to your JustBuy address, and we deliver it to you in Tanzania.</p>
+        <div class="cta">
+          <a class="btn" href="#register">Get my free addresses</a>
+          <a class="btn line" href="#prices">Work out the cost</a>
         </div>
-        <input id="weight" type="number" min="0" step="0.1" value="0.5" inputmode="decimal">
+        <div class="trust"><span>Free to register</span><span>Every tax shown upfront</span><span>Track every step</span></div>
+      </div>
+      <div class="label" aria-hidden="true">
+        <div class="top"><b>Just<span>Buy</span></b><span>PARCEL</span></div>
+        <div class="route">
+          <div><small>From</small><strong>US · UK</strong></div>
+          <div class="arrow">→</div>
+          <div style="text-align:right"><small>To</small><strong>TZ</strong></div>
+        </div>
+        <div class="to">
+          <small>Ship to</small>
+          <span class="blur" style="width:72%"></span><br>
+          <span class="blur" style="width:54%"></span><br>
+          <span class="blur" style="width:63%"></span><br>
+          <small style="margin-top:6px;color:var(--brand);font-weight:700">Register to see your address</small>
+        </div>
+        <div class="bars" id="barcode"></div>
+        <div class="foot"><span>Dar es Salaam</span><span>justbuy.shop</span></div>
       </div>
     </div>
-    <p class="hint"><b></b>Green fields are editable.</p>
   </section>
 
-  <section class="total" aria-live="polite">
-    <span class="k">Total (paid now)</span><span class="v" id="totTsh">–</span>
-    <span class="s" id="totUsdLbl">In USD</span><span class="sv" id="totUsd">–</span>
-    <span class="s">With shipping on delivery</span><span class="sv" id="grandTsh">–</span>
-  </section>
-
-  <section class="card">
-    <h2>Breakdown</h2>
-    <div class="table-scroll">
-    <table>
-      <tbody>
-        <tr><td><span class="lbl">Online price</span><span class="f">Price × Quantity</span></td><td class="n" id="u1"></td><td class="n t" id="s1"></td></tr>
-        <tr><td><span class="lbl">Domestic tax</span><span class="f">Online price × 9%</span></td><td class="n" id="u2"></td><td class="n t" id="s2"></td></tr>
-        <tr><td><span class="lbl">Importation duties</span><span class="f">(Price + Domestic tax) × 10%</span></td><td class="n" id="u3"></td><td class="n t" id="s3"></td></tr>
-        <tr><td><span class="lbl">JustBuy fee</span><span class="f">(Price + Domestic tax) × 2%</span></td><td class="n" id="u4"></td><td class="n t" id="s4"></td></tr>
-        <tr><td><span class="lbl">VAT</span><span class="f">(Price + Tax + Duties + Fee) × 18%</span></td><td class="n" id="u5"></td><td class="n t" id="s5"></td></tr>
-        <tr><td><span class="lbl">Total (exact)</span><span class="f">Sum of the above</span></td><td class="n" id="u6"></td><td class="n t" id="s6"></td></tr>
-        <tr><td><span class="lbl">Total (rounded)</span><span class="f">Rounded to whole dollars</span></td><td class="n" id="u7"></td><td class="n t" id="s7"></td></tr>
-        <tr class="sum"><td><span class="lbl">Shipping estimate</span><span class="f" id="shipNote">$10 per ½ kg, rounded up · paid on delivery</span></td><td class="n" id="u8"></td><td class="n t" id="s8"></td></tr>
-      </tbody>
-    </table>
+  <section class="block alt" id="how">
+    <div class="wrap">
+      <div class="head"><div class="eyebrow">How it works</div><h2>From online checkout to your hands in four steps</h2></div>
+      <ol class="steps">
+        <li><h3>Register free</h3><p>Fill in your name and phone number. You get our US and UK addresses straight away.</p></li>
+        <li><h3>Shop online</h3><p>Buy from Amazon, eBay, Walmart, ASOS, Next or any store that ships within the US or UK. Use your JustBuy address at checkout.</p></li>
+        <li><h3>We ship it to Tanzania</h3><p>Your parcel arrives at our warehouse, travels to Tanzania and goes through customs. You can follow it online.</p></li>
+        <li><h3>Collect and pay</h3><p>Taxes, duties and our fee are worked out upfront. Shipping is $10 per ½ kg, paid on delivery.</p></li>
+      </ol>
     </div>
   </section>
 
-  <section class="card">
-    <h2>Fixed rates</h2>
-    <div class="rates">
-      <span class="chip">Exchange rate <span>2,700 TSh/$</span></span>
-      <span class="chip">Domestic tax <span>9%</span></span>
-      <span class="chip">Import duty <span>10%</span></span>
-      <span class="chip">JustBuy fee <span>2%</span></span>
-      <span class="chip">VAT <span>18%</span></span>
+  <section class="block">
+    <div class="wrap">
+      <div class="head"><div class="eyebrow">Why JustBuy</div><h2>No surprises between the shop and your door</h2></div>
+      <div class="why">
+        <div><span class="mark">9% · 10% · 2% · 18%</span><h3>Clear pricing</h3><p>Domestic tax, import duty, our 2% fee and VAT are all shown before you buy. Use the calculator below to see the full cost in shillings.</p></div>
+        <div><span class="mark">JB-XXXXXXXX</span><h3>Tracking you can check</h3><p>Every shipment gets a JustBuy number. See where it is, from the US or UK warehouse to customs in Dar es Salaam.</p></div>
+        <div><span class="mark">JBC-XXXX-XXXX-XXXX</span><h3>Business accounts</h3><p>Importing for a company? Your business gets its own dashboard with all its shipments in one place.</p></div>
+      </div>
     </div>
   </section>
 
-  <section class="card" id="track" aria-labelledby="track-h">
-    <h2 id="track-h">Track your order</h2>
-    <form class="trk-form" id="trkForm" novalidate>
-      <label for="waybill" class="sr">Shipment or waybill number</label>
-      <input id="waybill" name="waybill" type="text" autocomplete="off" spellcheck="false"
-             placeholder="e.g. JB-7K2QX9MD" aria-describedby="trkHint">
-      <button class="btn" type="submit" id="trkBtn">Track</button>
-    </form>
-    <p class="hint">Business client? <a class="ext" href="dashboard.html">Open your company dashboard</a> to see all your shipments in one place.</p>
-    <p class="hint" id="trkHint">Enter the JustBuy shipment number we sent you (starts with JB-), or an Aramex waybill number. Separate several with commas.</p>
-    <p class="trk-msg" id="trkMsg" role="status" aria-live="polite"></p>
-    <div id="trkOut"></div>
+  <section class="block alt" id="register">
+    <div class="wrap reg">
+      <div>
+        <div class="eyebrow">Register</div>
+        <div class="head" style="margin-bottom:0"><h2>Get your US &amp; UK shipping addresses</h2>
+        <p>It's free and takes a minute. Your addresses appear as soon as you register.</p></div>
+        <ul class="reg-points">
+          <li>One address in the United States, one in the United Kingdom</li>
+          <li>Use them at checkout on any US or UK online store</li>
+          <li>We use your phone number to reach you about your parcels</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <form class="form" id="regForm" novalidate>
+          <label>Full name<input id="rName" autocomplete="name" required maxlength="120"></label>
+          <div class="two">
+            <label>Phone number<input id="rPhone" type="tel" autocomplete="tel" placeholder="e.g. 0712 345 678" required maxlength="30"></label>
+            <label>Email <span class="opt">optional</span><input id="rEmail" type="email" autocomplete="email" maxlength="200"></label>
+          </div>
+          <div class="two">
+            <label>City / town <span class="opt">optional</span><input id="rCity" autocomplete="address-level2" placeholder="e.g. Dar es Salaam" maxlength="80"></label>
+            <label>Shops you use <span class="opt">optional</span><input id="rShops" placeholder="e.g. Amazon, Shein" maxlength="300"></label>
+          </div>
+          <button class="btn" id="rBtn" type="submit">Register and show my addresses</button>
+          <p class="fine">We only use your details to contact you about your parcels.</p>
+          <div id="rMsg"></div>
+        </form>
+        <div id="regDone" class="hidden">
+          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Use these addresses at checkout.</div></div></div>
+          <div class="addr-grid" id="addrs"></div>
+          <div class="tips">
+            <strong>Before you order</strong>
+            <ul>
+              <li>Copy each line exactly as shown, including <b>DAR 24841</b>.</li>
+              <li>Keep your order confirmation. We use your order details to match the parcel to you.</li>
+              <li>Check the cost first with the calculator below.</li>
+            </ul>
+          </div>
+          <p class="fine" style="margin-top:12px"><button class="cp" id="rAgain" type="button">Register someone else</button></p>
+        </div>
+      </div>
+    </div>
   </section>
-</div>
+
+  <section class="block" id="prices">
+    <div class="wrap">
+      <div class="head"><div class="eyebrow">Prices</div><h2>What will it cost in shillings?</h2><p>Enter the price from the store, the quantity and the weight. Every tax and fee is listed below.</p></div>
+      <div class="calc">
+        <div class="col">
+          <div class="card">
+            <h3 class="sec">Your item</h3>
+            <div class="fields">
+              <label for="price">Online price (USD)<input id="price" type="number" min="0" step="0.01" value="45" inputmode="decimal"></label>
+              <label for="qty">Quantity<input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+              <div class="wfield">
+                <div class="wlabel"><label for="weight">Weight</label>
+                  <div class="seg" role="group" aria-label="Weight unit"><button type="button" id="u-kg" aria-pressed="true">kg</button><button type="button" id="u-lb" aria-pressed="false">lbs</button></div>
+                </div>
+                <input id="weight" type="number" min="0" step="0.1" value="0.5" inputmode="decimal">
+              </div>
+            </div>
+            <p class="hint">Change the green fields. Everything else updates as you type.</p>
+          </div>
+          <div class="total" aria-live="polite">
+            <span class="k">Total (paid now)</span><span class="v" id="totTsh">–</span>
+            <span class="s">In USD</span><span class="sv" id="totUsd">–</span>
+            <span class="s">With shipping on delivery</span><span class="sv" id="grandTsh">–</span>
+          </div>
+          <div class="card">
+            <h3 class="sec">Rates used</h3>
+            <div class="rates">
+              <span class="chip">Exchange rate <span>2,700 TSh/$</span></span>
+              <span class="chip">Domestic tax <span>9%</span></span>
+              <span class="chip">Import duty <span>10%</span></span>
+              <span class="chip">JustBuy fee <span>2%</span></span>
+              <span class="chip">VAT <span>18%</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="sec">Breakdown</h3>
+          <div class="table-scroll"><table><tbody>
+            <tr><td><span class="lbl">Online price</span><span class="f">Price × Quantity</span></td><td class="n" id="u1"></td><td class="n t" id="s1"></td></tr>
+            <tr><td><span class="lbl">Domestic tax</span><span class="f">Online price × 9%</span></td><td class="n" id="u2"></td><td class="n t" id="s2"></td></tr>
+            <tr><td><span class="lbl">Importation duties</span><span class="f">(Price + Domestic tax) × 10%</span></td><td class="n" id="u3"></td><td class="n t" id="s3"></td></tr>
+            <tr><td><span class="lbl">JustBuy fee</span><span class="f">(Price + Domestic tax) × 2%</span></td><td class="n" id="u4"></td><td class="n t" id="s4"></td></tr>
+            <tr><td><span class="lbl">VAT</span><span class="f">(Price + Tax + Duties + Fee) × 18%</span></td><td class="n" id="u5"></td><td class="n t" id="s5"></td></tr>
+            <tr><td><span class="lbl">Total (exact)</span><span class="f">Sum of the above</span></td><td class="n" id="u6"></td><td class="n t" id="s6"></td></tr>
+            <tr><td><span class="lbl">Total (rounded)</span><span class="f">Rounded to whole dollars</span></td><td class="n" id="u7"></td><td class="n t" id="s7"></td></tr>
+            <tr><td><span class="lbl">Shipping estimate</span><span class="f" id="shipNote">$10 per ½ kg, rounded up · paid on delivery</span></td><td class="n" id="u8"></td><td class="n t" id="s8"></td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt" id="track" aria-labelledby="track-h">
+    <div class="wrap">
+      <div class="head"><div class="eyebrow">Tracking</div><h2 id="track-h">Where is my order?</h2><p>Enter the JustBuy shipment number we sent you (it starts with JB-), or an Aramex waybill number.</p></div>
+      <div class="trk">
+        <form class="trk-form" id="trkForm" novalidate>
+          <label for="waybill" class="sr">Shipment or waybill number</label>
+          <input id="waybill" name="waybill" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. JB-7K2QX9MD" aria-describedby="trkHint">
+          <button class="btn" type="submit" id="trkBtn">Track</button>
+        </form>
+        <p class="hint" id="trkHint">Tracking several? Separate the numbers with commas.</p>
+        <p class="trk-msg" id="trkMsg" role="status" aria-live="polite"></p>
+        <div id="trkOut"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="biz">
+        <div><h2>Importing for a business?</h2><p>Business clients get a private dashboard showing every shipment for their company, with the price calculator built in. Sign in with the company code we gave you.</p></div>
+        <a class="btn" href="dashboard.html">Open business dashboard</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap"><span>© <span id="yr"></span> JustBuy · justbuy.shop</span><span><a href="#register">Register</a> · <a href="#prices">Prices</a> · <a href="#track">Track</a> · <a href="dashboard.html">Business login</a></span></div>
+</footer>
 
 <script>
 const R={fx:2700,tax:0.09,duty:0.10,fee:0.02,vat:0.18};
@@ -274,6 +513,57 @@ calc();
   const q=new URLSearchParams(location.search).get("waybill")||new URLSearchParams(location.search).get("t");
   if(q){inp.value=q;form.requestSubmit();}
 })();
-</script>
 
-</body></html>
+/* ---- Registration: addresses come from the database only after registering ---- */
+(function(){
+  const SB_URL="https://icenxafytlodugspnzfj.supabase.co", SB_KEY="sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
+  const KEY="justbuy-addresses";
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const keep={get(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch{return null;}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v));}catch{}},clear(){try{localStorage.removeItem(KEY);}catch{}}};
+  function showAddresses(list,name){
+    $("addrs").innerHTML=list.map(a=>{
+      const all=a.lines.map(l=>l.value).join("\n");
+      return `<article class="addr"><header><h3>${esc(a.label)} address</h3><button class="btn small line" type="button" data-copy="${esc(all)}">Copy all</button></header>
+        <dl>${a.lines.map(l=>`<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl></article>`;
+    }).join("");
+    $("rHello").textContent=name?`You're registered, ${name.split(" ")[0]}`:"You're registered";
+    $("regForm").classList.add("hidden"); $("regDone").classList.remove("hidden");
+  }
+  $("addrs").addEventListener("click",async e=>{
+    const b=e.target.closest("[data-copy]"); if(!b) return;
+    const t=b.textContent;
+    try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied";}
+    catch{b.textContent="Select and copy";}
+    setTimeout(()=>b.textContent=t,1800);
+  });
+  $("regForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const name=$("rName").value.trim(), phone=$("rPhone").value.trim(), email=$("rEmail").value.trim();
+    const say=m=>$("rMsg").innerHTML=m?`<p class="err">${esc(m)}</p>`:"";
+    if(name.length<2){say("Please enter your full name.");$("rName").focus();return;}
+    if(phone.replace(/\D/g,"").length<9){say("Please enter a valid phone number.");$("rPhone").focus();return;}
+    if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){say("Please enter a valid email address, or leave it empty.");$("rEmail").focus();return;}
+    say(""); $("rBtn").disabled=true; $("rBtn").textContent="Registering…";
+    try{
+      const res=await fetch(SB_URL+"/rest/v1/rpc/register_customer",{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},
+        body:JSON.stringify({p_name:name,p_phone:phone,p_email:email||null,p_city:$("rCity").value.trim()||null,p_shops:$("rShops").value.trim()||null})});
+      const data=await res.json().catch(()=>null);
+      if(!res.ok){say((data&&data.message)||"Registration didn't go through. Please try again.");return;}
+      keep.set({name,addresses:data}); showAddresses(data,name);
+      $("register").scrollIntoView({block:"start"});
+    }catch{ say("We couldn't reach JustBuy. Check your internet connection and try again."); }
+    finally{ $("rBtn").disabled=false; $("rBtn").textContent="Register and show my addresses"; }
+  });
+  $("rAgain").onclick=()=>{keep.clear();$("regForm").reset();$("regDone").classList.add("hidden");$("regForm").classList.remove("hidden");$("rName").focus();};
+  const saved=keep.get(); if(saved&&Array.isArray(saved.addresses)) showAddresses(saved.addresses,saved.name);
+})();
+
+/* ---- Decorative barcode + year ---- */
+(function(){
+  const w=[2,1,3,1,1,2,1,3,2,1,1,2,3,1,2,1,1,3,1,2,2,1,3,1,1,2,1,2,3,1,2,1,1,3,2,1];
+  $("barcode").innerHTML=w.map((n,i)=>`<i style="width:${n}px;opacity:${i%2?0:1}"></i>`).join("");
+  $("yr").textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
