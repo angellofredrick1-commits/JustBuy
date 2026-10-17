@@ -277,7 +277,7 @@ footer.site a{color:var(--muted)}
       <div>
         <div class="eyebrow">Register</div>
         <div class="head" style="margin-bottom:0"><h2>Get your US &amp; UK shipping addresses</h2>
-        <p>It's free and takes a minute. Your addresses appear as soon as you register.</p></div>
+        <p>It's free and takes a minute. You'll see your addresses on your My addresses page as soon as you register.</p></div>
         <ul class="reg-points">
           <li>One address in the United States, one in the United Kingdom</li>
           <li>Use them at checkout on any US or UK online store</li>
@@ -295,22 +295,14 @@ footer.site a{color:var(--muted)}
             <label>City / town <span class="opt">optional</span><input id="rCity" autocomplete="address-level2" placeholder="e.g. Dar es Salaam" maxlength="80"></label>
             <label>Shops you use <span class="opt">optional</span><input id="rShops" placeholder="e.g. Amazon, Shein" maxlength="300"></label>
           </div>
-          <button class="btn" id="rBtn" type="submit">Register and show my addresses</button>
+          <button class="btn" id="rBtn" type="submit">Register and get my addresses</button>
           <p class="fine">We only use your details to contact you about your parcels.</p>
           <p class="fine">Already registered? <a class="ext" href="addresses.html">Find your addresses</a></p>
           <div id="rMsg"></div>
         </form>
         <div id="regDone" class="hidden">
-          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Use these addresses at checkout. You can find them again any time under <a class="ext" href="addresses.html">My addresses</a>.</div></div></div>
-          <div class="addr-grid" id="addrs"></div>
-          <div class="tips">
-            <strong>Before you order</strong>
-            <ul>
-              <li>Copy each line exactly as shown, including <b>DAR 24841</b>.</li>
-              <li>Keep your order confirmation. We use your order details to match the parcel to you.</li>
-              <li>Check the cost first with the calculator below.</li>
-            </ul>
-          </div>
+          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Your US and UK addresses are on your My addresses page.</div></div></div>
+          <a class="btn" href="addresses.html" style="width:100%;margin-top:12px">View my addresses</a>
           <p class="fine" style="margin-top:12px"><button class="cp" id="rAgain" type="button">Register someone else</button></p>
         </div>
       </div>
@@ -524,22 +516,10 @@ calc();
   const KEY="justbuy-addresses";
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const keep={get(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch{return null;}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v));}catch{}},clear(){try{localStorage.removeItem(KEY);}catch{}}};
-  function showAddresses(list,name){
-    $("addrs").innerHTML=list.map(a=>{
-      const all=a.lines.map(l=>l.value).join("\n");
-      return `<article class="addr"><header><h3>${esc(a.label)} address</h3><button class="btn small line" type="button" data-copy="${esc(all)}">Copy all</button></header>
-        <dl>${a.lines.map(l=>`<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl></article>`;
-    }).join("");
+  function showRegistered(name){
     $("rHello").textContent=name?`You're registered, ${name.split(" ")[0]}`:"You're registered";
     $("regForm").classList.add("hidden"); $("regDone").classList.remove("hidden");
   }
-  $("addrs").addEventListener("click",async e=>{
-    const b=e.target.closest("[data-copy]"); if(!b) return;
-    const t=b.textContent;
-    try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied";}
-    catch{b.textContent="Select and copy";}
-    setTimeout(()=>b.textContent=t,1800);
-  });
   $("regForm").addEventListener("submit",async e=>{
     e.preventDefault();
     const name=$("rName").value.trim(), phone=$("rPhone").value.trim(), email=$("rEmail").value.trim();
@@ -553,13 +533,12 @@ calc();
         body:JSON.stringify({p_name:name,p_phone:phone,p_email:email||null,p_city:$("rCity").value.trim()||null,p_shops:$("rShops").value.trim()||null})});
       const data=await res.json().catch(()=>null);
       if(!res.ok){say((data&&data.message)||"Registration didn't go through. Please try again.");return;}
-      keep.set({name,addresses:data}); showAddresses(data,name);
-      $("register").scrollIntoView({block:"start"});
+      keep.set({name,addresses:data}); location.href="addresses.html";
     }catch{ say("We couldn't reach JustBuy. Check your internet connection and try again."); }
-    finally{ $("rBtn").disabled=false; $("rBtn").textContent="Register and show my addresses"; }
+    finally{ $("rBtn").disabled=false; $("rBtn").textContent="Register and get my addresses"; }
   });
   $("rAgain").onclick=()=>{keep.clear();$("regForm").reset();$("regDone").classList.add("hidden");$("regForm").classList.remove("hidden");$("rName").focus();};
-  const saved=keep.get(); if(saved&&Array.isArray(saved.addresses)) showAddresses(saved.addresses,saved.name);
+  const saved=keep.get(); if(saved&&Array.isArray(saved.addresses)) showRegistered(saved.name);
 })();
 
 /* ---- Decorative barcode + year ---- */
