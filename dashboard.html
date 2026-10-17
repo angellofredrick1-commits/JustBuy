@@ -127,6 +127,17 @@ td.t{color:var(--muted);font-size:13px}
 .chip{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted)}
 .chip span{font-family:var(--font-num);color:var(--fg)}
 .scroll{overflow-x:auto}
+.agrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:760px){.agrid{grid-template-columns:1fr}}
+.addr{background:var(--surface);border:1.5px solid var(--fg);border-radius:12px;overflow:hidden}
+.addr header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--fg);background:var(--soft)}
+.addr header h3{margin:0;font-size:17px}
+.addr dl{margin:0;padding:6px 16px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 12px;align-items:center}
+.addr dt{font-size:12px;color:var(--muted);font-weight:700;padding:7px 0}
+.addr dd{margin:0;font:600 14px var(--font-num);overflow-wrap:anywhere;padding:7px 0}
+.addr dt,.addr dd,.addr .cp{border-bottom:1px solid var(--line)}
+.addr dl>*:nth-last-child(-n+3){border-bottom:0}
+.cp{background:none;border:0;color:var(--brand);font:800 12px var(--font-ui);cursor:pointer;padding:7px 0;align-self:stretch}
 footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
 </style>
 </head>
@@ -155,6 +166,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
     <nav class="tabs" role="tablist">
       <button class="tab on" id="tabS" role="tab" aria-selected="true">Shipments</button>
       <button class="tab" id="tabC" role="tab" aria-selected="false">Price calculator</button>
+      <button class="tab" id="tabA" role="tab" aria-selected="false">Shipping addresses</button>
     </nav>
 
     <section id="viewS">
@@ -164,6 +176,11 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
         <span class="fresh" id="fresh"></span>
       </div>
       <div class="ships" id="ships"></div>
+    </section>
+
+    <section id="viewA" class="hidden">
+      <p style="margin:0 0 14px;color:var(--muted)">Use these addresses when you order from US or UK online stores. Copy each line exactly as shown, including <b style="color:var(--fg)">DAR 24841</b>.</p>
+      <div class="agrid" id="addrs"><div class="empty">Loading addresses…</div></div>
     </section>
 
     <section id="viewC" class="hidden">
@@ -277,7 +294,7 @@ function showApp(){
   renderShipments(); calc();
 }
 $("gateForm").onsubmit = e => { e.preventDefault(); signIn($("code").value, $("remember").checked); };
-$("signOut").onclick = () => { store.clear(); code = data = null; $("code").value = ""; document.title = "JustBuy Client Dashboard"; showGate(); };
+$("signOut").onclick = () => { store.clear(); addrLoaded = false; tab("s"); code = data = null; $("code").value = ""; document.title = "JustBuy Client Dashboard"; showGate(); };
 $("refresh").onclick = async () => {
   $("refresh").disabled = true;
   try { const d = await fetchDashboard(code); if (!d) { $("signOut").click(); $("gateMsg").innerHTML = `<div class="err">This code no longer works. Ask JustBuy for your new code.</div>`; return; } data = d; renderShipments(); }
@@ -287,11 +304,35 @@ $("refresh").onclick = async () => {
 
 /* ---------- Tabs ---------- */
 function tab(t){
-  $("tabS").classList.toggle("on", t==="s"); $("tabC").classList.toggle("on", t==="c");
-  $("tabS").setAttribute("aria-selected", t==="s"); $("tabC").setAttribute("aria-selected", t==="c");
-  $("viewS").classList.toggle("hidden", t!=="s"); $("viewC").classList.toggle("hidden", t!=="c");
+  [["tabS","viewS","s"],["tabC","viewC","c"],["tabA","viewA","a"]].forEach(([b,v,k]) => {
+    $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
+  });
+  if (t === "a") loadAddresses();
 }
-$("tabS").onclick = () => tab("s"); $("tabC").onclick = () => tab("c");
+$("tabS").onclick = () => tab("s"); $("tabC").onclick = () => tab("c"); $("tabA").onclick = () => tab("a");
+
+/* ---------- Shipping addresses ---------- */
+let addrLoaded = false;
+async function loadAddresses(){
+  if (addrLoaded) return;
+  try {
+    const res = await fetch(SB_URL + "/rest/v1/rpc/company_addresses", { method: "POST", headers: { "Content-Type": "application/json", apikey: SB_KEY }, body: JSON.stringify({ p_code: code }) });
+    if (!res.ok) throw new Error();
+    const list = await res.json();
+    if (!list) { $("addrs").innerHTML = `<div class="empty">Your access code no longer works. Ask JustBuy for your new code.</div>`; return; }
+    addrLoaded = true;
+    $("addrs").innerHTML = list.map(a => {
+      const all = a.lines.map(l => l.value).join("\n");
+      return `<article class="addr"><header><h3>${esc(a.label)}</h3><button class="btn ghost" type="button" data-copy="${esc(all)}">Copy all</button></header>
+        <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl></article>`;
+    }).join("");
+  } catch { $("addrs").innerHTML = `<div class="empty">We couldn't load the addresses. Check your connection and open this tab again.</div>`; }
+}
+$("addrs").addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]"); if (!b) return; const t = b.textContent;
+  try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied"; } catch { b.textContent = "Select and copy"; }
+  setTimeout(() => b.textContent = t, 1800);
+});
 
 /* ---------- Shipments ---------- */
 const group = s => s === "Delivered" ? "done" : s === "On hold" ? "hold" : "move";
