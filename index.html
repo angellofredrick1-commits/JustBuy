@@ -144,12 +144,12 @@ tr.sum td{border-bottom:none;padding-top:12px}
   <section class="card" id="track" aria-labelledby="track-h">
     <h2 id="track-h">Track your order</h2>
     <form class="trk-form" id="trkForm" novalidate>
-      <label for="waybill" class="sr">Waybill number</label>
+      <label for="waybill" class="sr">Shipment or waybill number</label>
       <input id="waybill" name="waybill" type="text" autocomplete="off" spellcheck="false"
-             placeholder="Waybill number" aria-describedby="trkHint">
+             placeholder="e.g. JB-7K2QX9MD" aria-describedby="trkHint">
       <button class="btn" type="submit" id="trkBtn">Track</button>
     </form>
-    <p class="hint" id="trkHint">Use the Aramex waybill number we sent you. Separate several with commas.</p>
+    <p class="hint" id="trkHint">Enter the JustBuy shipment number we sent you (starts with JB-), or an Aramex waybill number. Separate several with commas.</p>
     <p class="trk-msg" id="trkMsg" role="status" aria-live="polite"></p>
     <div id="trkOut"></div>
   </section>
@@ -219,24 +219,58 @@ calc();
     }
     out.innerHTML=h;
   }
+  /* JustBuy shipments (JB-…) come from the shipments database that admin.html updates */
+  const SB_URL="https://icenxafytlodugspnzfj.supabase.co", SB_KEY="sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
+  const isJB=s=>/^JB-/i.test(s);
+  const day=d=>new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  async function trackJB(code){
+    const res=await fetch(SB_URL+"/rest/v1/rpc/track_shipment",{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},body:JSON.stringify({p_tracking:code})});
+    if(!res.ok) throw new Error("lookup failed");
+    return {code, s:await res.json()};
+  }
+  function renderJB({code,s}){
+    let h=`<div class="ship"><div class="ship-h"><span class="wb">${esc(s?s.tracking_no:code.toUpperCase())}</span>`;
+    if(!s) return h+`<span class="st">Not found</span></div><p class="trk-msg">We couldn't find this shipment number. Check it exactly as we sent it, including the dash.</p></div>`;
+    const facts=[s.origin&&s.destination?`${esc(s.origin)} → ${esc(s.destination)}`:esc(s.origin||s.destination||""),s.eta?"Expected "+day(s.eta):""].filter(Boolean).join(" · ");
+    h+=`<span class="st">${esc(s.status)}</span></div>`;
+    if(facts) h+=`<p class="trk-msg">${facts}</p>`;
+    if(s.customer_note) h+=`<p class="c" style="margin:8px 0 0">${esc(s.customer_note)}</p>`;
+    if(s.events&&s.events.length){
+      h+=`<ol class="tl">`+s.events.map(e=>`<li><div class="d">${esc(e.status)}</div><div class="m">${when(e.happened_at)}${e.location?" · "+esc(e.location):""}</div>${e.note?`<div class="c">${esc(e.note)}</div>`:""}</li>`).join("")+`</ol>`;
+    }
+    return h+`<p class="trk-msg"><a class="ext" href="track.html?t=${encodeURIComponent(s.tracking_no)}">See full shipment details →</a></p></div>`;
+  }
+
   form.addEventListener("submit",async ev=>{
     ev.preventDefault();
-    const waybills=inp.value.split(/[\s,;]+/).map(s=>s.trim()).filter(Boolean);
+    const all=[...new Set(inp.value.split(/[\s,;]+/).map(s=>s.trim()).filter(Boolean))];
     out.innerHTML="";
-    if(!waybills.length){say("Enter a waybill number first.",true);inp.focus();return;}
-    btn.disabled=true;btn.textContent="Tracking…";say("Checking with Aramex…");
+    if(!all.length){say("Enter your shipment number first.",true);inp.focus();return;}
+    const jb=all.filter(isJB), waybills=all.filter(s=>!isJB(s));
+    btn.disabled=true;btn.textContent="Tracking…";say(waybills.length?"Checking your shipments…":"Checking your shipment…");
+    let h="", problems=[];
     try{
-      const res=await fetch("/.netlify/functions/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({waybills})});
-      const data=await res.json().catch(()=>({ok:false,error:"Unexpected response from the server."}));
-      if(!data.shipments){say(data.error||"Tracking failed. Try again.",true);return;}
-      const notes=(data.notifications||[]).map(n=>n.message).filter(Boolean).join(" ");
-      say(data.hasErrors?("Aramex reported a problem: "+(notes||"unknown error")):"",!!data.hasErrors);
-      render(data);
+      const [jbRes, arx]=await Promise.all([
+        Promise.all(jb.map(c=>trackJB(c).catch(()=>({code:c,failed:true})))),
+        waybills.length?fetch("/.netlify/functions/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({waybills})}).then(r=>r.json()).catch(()=>({error:"Couldn't reach Aramex. Try again."})):null
+      ]);
+      for(const r of jbRes){
+        if(r.failed) problems.push(`Couldn't check ${r.code}. Try again.`); else h+=renderJB(r);
+      }
+      if(arx){
+        if(!arx.shipments) problems.push(arx.error||"Aramex tracking failed. Try again.");
+        else{
+          if(arx.hasErrors) problems.push("Aramex reported a problem: "+((arx.notifications||[]).map(n=>n.message).filter(Boolean).join(" ")||"unknown error"));
+          render(arx); h+=out.innerHTML;
+        }
+      }
+      out.innerHTML=h;
+      say(problems.join(" "),problems.length>0);
     }catch(e){
       say("Couldn't connect. Check your internet and try again.",true);
     }finally{btn.disabled=false;btn.textContent="Track";}
   });
-  const q=new URLSearchParams(location.search).get("waybill");
+  const q=new URLSearchParams(location.search).get("waybill")||new URLSearchParams(location.search).get("t");
   if(q){inp.value=q;form.requestSubmit();}
 })();
 </script>
