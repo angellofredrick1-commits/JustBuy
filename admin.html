@@ -84,6 +84,12 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .row-end{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap}
 .share{background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
 .hidden{display:none!important}
+.tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;padding:10px 16px;font-weight:800;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+.code{font:600 20px var(--font-num);letter-spacing:.06em;background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:12px 14px;word-break:break-all}
+.check{flex-direction:row;align-items:center;gap:8px;display:flex}
+.check input{width:auto}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
@@ -109,7 +115,21 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 
   <!-- APP -->
   <div id="app" class="hidden">
-    <div class="layout">
+    <nav class="tabs" role="tablist">
+      <button class="tab on" id="tabShip" role="tab" aria-selected="true">Shipments</button>
+      <button class="tab" id="tabComp" role="tab" aria-selected="false">Companies</button>
+    </nav>
+
+    <div class="layout hidden" id="compView">
+      <div class="card">
+        <div class="toolbar"><input id="cSearch" type="search" placeholder="Search companies"></div>
+        <button class="btn primary" id="cNewBtn" style="width:100%;margin-bottom:12px">+ New company</button>
+        <div class="list" id="cList"></div>
+      </div>
+      <div class="card" id="cDetail"><div class="empty">Select a company, or create a new one.</div></div>
+    </div>
+
+    <div class="layout" id="shipView">
       <div class="card">
         <div class="toolbar">
           <input id="search" type="search" placeholder="Search tracking no. or customer">
@@ -133,7 +153,7 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
     </div>
     <div class="grid g2">
       <label>Tracking number<input id="f_tracking_no" required pattern="[A-Za-z0-9\-]{6,30}" title="6–30 letters, numbers or dashes"></label>
-      <label>Customer (company)<input id="f_customer_name" required></label>
+      <label>Company<select id="f_company_id" required></select></label>
     </div>
     <div class="grid" style="margin-top:12px">
       <label>What's in the shipment <span class="opt">optional</span><input id="f_description" placeholder="e.g. 40 cartons of phone accessories"></label>
@@ -165,6 +185,7 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 const SUPABASE_URL = "https://icenxafytlodugspnzfj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
 const TRACK_PAGE_URL = new URL("track.html", location.href).href; // track.html sits next to this page on the same site
+const DASHBOARD_URL = new URL("dashboard.html", location.href).href; // client dashboard, same site
 const STATUSES = ["Order received","Purchased from supplier","At origin warehouse","Departed origin","In transit","Arrived in Tanzania","Customs clearance","Ready for collection","Out for delivery","Delivered","On hold"];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -175,7 +196,7 @@ const fmtD = d => d ? new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"n
 const pillClass = s => s==="Delivered" ? "s-done" : s==="On hold" ? "s-hold" : "s-progress";
 const msg = (el, text, kind="err") => { $(el).innerHTML = text ? `<div class="msg ${kind}">${esc(text)}</div>` : ""; };
 
-let shipments = [], selectedId = null, signUpMode = false;
+let shipments = [], selectedId = null, signUpMode = false, companies = [], selectedCompany = null;
 
 STATUSES.forEach(s => $("filter").insertAdjacentHTML("beforeend", `<option>${esc(s)}</option>`));
 
@@ -217,7 +238,7 @@ async function route(session){
     await sb.auth.signOut(); return;
   }
   $("whoEmail").textContent = session.user.email;
-  show("app"); loadList();
+  show("app"); await loadCompanies(); loadList();
 }
 function show(which){
   $("login").classList.toggle("hidden", which!=="login");
@@ -227,6 +248,7 @@ function show(which){
 
 /* ---------- List ---------- */
 async function loadList(){
+  if (companies.length && !$("compView").classList.contains("hidden")) loadCompanies();
   const { data, error } = await sb.from("shipments").select("id,tracking_no,customer_name,status,updated_at").order("updated_at",{ascending:false}).limit(1000);
   if (error) { $("list").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
   shipments = data; renderList();
@@ -253,10 +275,13 @@ function newTrackingNo(){
 }
 
 /* ---------- Create / edit form ---------- */
-const FIELDS = ["tracking_no","customer_name","description","origin","destination","pieces","weight_kg","eta","customer_note","internal_note"];
+const FIELDS = ["tracking_no","company_id","description","origin","destination","pieces","weight_kg","eta","customer_note","internal_note"];
 function renderForm(s){
   $("detail").innerHTML = ""; $("detail").appendChild($("tplForm").content.cloneNode(true));
   $("fTitle").textContent = s ? "Edit details" : "New shipment";
+  const active = companies.filter(c => c.active || (s && c.id === s.company_id));
+  $("f_company_id").innerHTML = `<option value="">${active.length ? "Choose a company" : "Add a company first (Companies tab)"}</option>` +
+    active.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   FIELDS.forEach(k => $("f_"+k).value = s ? (s[k] ?? "") : "");
   if (!s) $("f_tracking_no").value = newTrackingNo();
   if (s) $("fDelete").classList.remove("hidden");
@@ -278,7 +303,7 @@ function renderForm(s){
     }
     $("fSave").disabled = false;
     if (res.error) { msg("fMsg", res.error.code==="23505" ? "That tracking number is already used." : res.error.message); return; }
-    await loadList(); openShipment(res.data.id);
+    await loadList(); loadCompanies(); openShipment(res.data.id);
   };
 }
 function confirmDelete(s){
@@ -368,6 +393,118 @@ async function openShipment(id){
       await loadList(); openShipment(s.id);
     } else { b.dataset.armed = "1"; b.textContent = "Click again to remove"; }
   });
+}
+
+/* ---------- Tabs ---------- */
+function setTab(t){
+  $("tabShip").classList.toggle("on", t==="ship"); $("tabComp").classList.toggle("on", t==="comp");
+  $("tabShip").setAttribute("aria-selected", t==="ship"); $("tabComp").setAttribute("aria-selected", t==="comp");
+  $("shipView").classList.toggle("hidden", t!=="ship"); $("compView").classList.toggle("hidden", t!=="comp");
+}
+$("tabShip").onclick = () => setTab("ship");
+$("tabComp").onclick = () => { setTab("comp"); renderCompanies(); };
+
+/* ---------- Companies ---------- */
+async function loadCompanies(){
+  const { data, error } = await sb.from("companies").select("*, shipments(count)").order("name");
+  if (error) { $("cList").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+  companies = data; renderCompanies();
+}
+function renderCompanies(){
+  const q = $("cSearch").value.trim().toLowerCase();
+  const rows = companies.filter(c => !q || c.name.toLowerCase().includes(q));
+  $("cList").innerHTML = rows.length ? rows.map(c => {
+    const n = c.shipments?.[0]?.count ?? 0;
+    return `<button class="item ${c.id===selectedCompany?"sel":""}" data-cid="${c.id}">
+      <span class="cu">${esc(c.name)}</span>${c.active?"":`<span class="pill s-hold">Code off</span>`}
+      <span class="dt">${n} shipment${n===1?"":"s"}</span></button>`;
+  }).join("") : `<div class="empty">${companies.length ? "No companies match." : "No companies yet. Add your first client."}</div>`;
+}
+$("cSearch").oninput = renderCompanies;
+$("cList").onclick = e => { const b = e.target.closest("[data-cid]"); if (b) openCompany(b.dataset.cid); };
+$("cNewBtn").onclick = () => { selectedCompany = null; renderCompanies(); companyForm(null); };
+
+function companyForm(c){
+  $("cDetail").innerHTML = `
+    <form id="cForm">
+      <div class="detail-head"><h2>${c ? "Edit company" : "New company"}</h2></div>
+      <div class="grid"><label>Company name<input id="c_name" required></label></div>
+      <div class="grid g3" style="margin-top:12px">
+        <label>Contact person <span class="opt">optional</span><input id="c_contact_name"></label>
+        <label>Phone <span class="opt">optional</span><input id="c_contact_phone" type="tel"></label>
+        <label>Email <span class="opt">optional</span><input id="c_contact_email" type="email"></label>
+      </div>
+      ${c ? `<label class="check" style="margin-top:12px"><input id="c_active" type="checkbox"> Access code works (untick to block this company's dashboard)</label>` : ""}
+      <div class="row-end"><button type="button" class="btn" id="cCancel">Cancel</button><button class="btn primary" id="cSave" type="submit">${c ? "Save" : "Create company and code"}</button></div>
+      <div id="cMsg"></div>
+    </form>`;
+  ["name","contact_name","contact_phone","contact_email"].forEach(k => $("c_"+k).value = c ? (c[k] ?? "") : "");
+  if (c) $("c_active").checked = c.active;
+  $("cCancel").onclick = () => c ? openCompany(c.id) : ($("cDetail").innerHTML = '<div class="empty">Select a company, or create a new one.</div>');
+  $("cForm").onsubmit = async e => {
+    e.preventDefault();
+    const row = {};
+    ["name","contact_name","contact_phone","contact_email"].forEach(k => { const v = $("c_"+k).value.trim(); row[k] = v || null; });
+    if (c) row.active = $("c_active").checked;
+    $("cSave").disabled = true;
+    const res = c ? await sb.from("companies").update(row).eq("id", c.id).select().single()
+                  : await sb.from("companies").insert(row).select().single();
+    $("cSave").disabled = false;
+    if (res.error) { msg("cMsg", res.error.message); return; }
+    await loadCompanies(); loadList(); openCompany(res.data.id);
+  };
+}
+
+function openCompany(id){
+  selectedCompany = id; renderCompanies();
+  const c = companies.find(x => x.id === id); if (!c) return;
+  const n = c.shipments?.[0]?.count ?? 0;
+  const share = `Hello ${c.contact_name || c.name},\n\nYour JustBuy client dashboard is ready. You can track all of ${c.name}'s shipments and use our price calculator here:\n${DASHBOARD_URL}\n\nYour company access code: ${c.access_code}\n\nPlease keep this code private. Anyone with it can see your shipments.`;
+  const contact = [c.contact_name, c.contact_phone, c.contact_email].filter(Boolean).map(esc).join(" · ");
+  $("cDetail").innerHTML = `
+    <div class="detail-head">
+      <div><h2>${esc(c.name)}</h2>${contact?`<div class="tn" style="font-family:var(--font-ui)">${contact}</div>`:""}</div>
+      <div class="actions">${c.active?"":`<span class="pill s-hold">Code turned off</span>`}<button class="btn small" id="cEdit">Edit</button></div>
+    </div>
+    <section>
+      <h3>Access code</h3>
+      <div class="code" id="cCode">${esc(c.access_code)}</div>
+      <div class="row-end"><button class="btn small" id="cRegen">Make a new code</button><button class="btn small" id="cCopyCode">Copy code</button></div>
+      <div id="cRegenMsg"></div>
+    </section>
+    <section>
+      <h3>Send to client</h3>
+      <div class="share" id="cShare">${esc(share)}</div>
+      <div class="row-end"><button class="btn small" id="cCopy">Copy message</button></div>
+    </section>
+    <section>
+      <h3>Shipments</h3>
+      <p style="margin:0 0 10px;color:var(--muted);font-size:14px">${n} shipment${n===1?"":"s"} linked to this company.</p>
+      <div class="row-end" style="justify-content:flex-start;margin:0"><button class="btn small" id="cShowShip">Show in Shipments</button><button class="btn small primary" id="cNewShip">+ New shipment for ${esc(c.name)}</button></div>
+    </section>`;
+  $("cEdit").onclick = () => companyForm(c);
+  $("cCopyCode").onclick = () => copyText(c.access_code, $("cCopyCode"), $("cCode"));
+  $("cCopy").onclick = () => copyText(share, $("cCopy"), $("cShare"));
+  $("cShowShip").onclick = () => { setTab("ship"); $("search").value = c.name; renderList(); };
+  $("cNewShip").onclick = () => { setTab("ship"); selectedId = null; renderList(); renderForm(null); $("f_company_id").value = c.id; };
+  $("cRegen").onclick = () => {
+    $("cRegenMsg").innerHTML = `<div class="msg err">The old code will stop working straight away. ${esc(c.name)} will need the new one.
+      <div class="row-end"><button class="btn small" id="rgNo">Keep current code</button><button class="btn small primary" id="rgYes">Make new code</button></div></div>`;
+    $("rgNo").onclick = () => $("cRegenMsg").innerHTML = "";
+    $("rgYes").onclick = async () => {
+      const { data: code, error: e1 } = await sb.rpc("gen_company_code");
+      if (e1) { msg("cRegenMsg", e1.message); return; }
+      const { error } = await sb.from("companies").update({ access_code: code }).eq("id", c.id);
+      if (error) { msg("cRegenMsg", error.message); return; }
+      await loadCompanies(); openCompany(c.id);
+    };
+  };
+}
+
+async function copyText(text, btn, box){
+  try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+  catch { const r = document.createRange(); r.selectNodeContents(box); getSelection().removeAllRanges(); getSelection().addRange(r); btn.textContent = "Selected, press Ctrl+C"; }
+  setTimeout(() => btn.textContent = btn.id==="cCopyCode" ? "Copy code" : "Copy message", 2500);
 }
 </script>
 </body>
