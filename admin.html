@@ -90,6 +90,11 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .code{font:600 20px var(--font-num);letter-spacing:.06em;background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:12px 14px;word-break:break-all}
 .check{flex-direction:row;align-items:center;gap:8px;display:flex}
 .check input{width:auto}
+.rtable{width:100%;border-collapse:collapse;font-size:14px}
+.rtable th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.rtable td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.rtable td.ph{font-family:var(--font-num);white-space:nowrap}
+.rtable td.dt{color:var(--muted);white-space:nowrap}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
@@ -118,7 +123,13 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
     <nav class="tabs" role="tablist">
       <button class="tab on" id="tabShip" role="tab" aria-selected="true">Shipments</button>
       <button class="tab" id="tabComp" role="tab" aria-selected="false">Companies</button>
+      <button class="tab" id="tabReg" role="tab" aria-selected="false">Registrations</button>
     </nav>
+
+    <div class="card hidden" id="regView">
+      <div class="toolbar"><input id="rSearch" type="search" placeholder="Search name, phone, email or city"><span id="rCount" style="align-self:center;color:var(--muted);font-size:13px"></span></div>
+      <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Registered</th><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Shops</th></tr></thead><tbody id="rBody"></tbody></table></div>
+    </div>
 
     <div class="layout hidden" id="compView">
       <div class="card">
@@ -397,10 +408,28 @@ async function openShipment(id){
 
 /* ---------- Tabs ---------- */
 function setTab(t){
-  $("tabShip").classList.toggle("on", t==="ship"); $("tabComp").classList.toggle("on", t==="comp");
-  $("tabShip").setAttribute("aria-selected", t==="ship"); $("tabComp").setAttribute("aria-selected", t==="comp");
-  $("shipView").classList.toggle("hidden", t!=="ship"); $("compView").classList.toggle("hidden", t!=="comp");
+  [["tabShip","shipView","ship"],["tabComp","compView","comp"],["tabReg","regView","reg"]].forEach(([b,v,k]) => {
+    $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
+  });
 }
+$("tabReg").onclick = () => { setTab("reg"); loadRegs(); };
+
+/* ---------- Registrations (from the landing page) ---------- */
+let regs = [];
+async function loadRegs(){
+  $("rBody").innerHTML = `<tr><td colspan="6" class="dt">Loading…</td></tr>`;
+  const { data, error } = await sb.from("registrations").select("*").order("created_at",{ascending:false}).limit(2000);
+  if (error) { $("rBody").innerHTML = `<tr><td colspan="6"><div class="msg err">${esc(error.message)}</div></td></tr>`; return; }
+  regs = data; renderRegs();
+}
+function renderRegs(){
+  const q = $("rSearch").value.trim().toLowerCase();
+  const rows = regs.filter(r => !q || [r.full_name,r.phone,r.email,r.city,r.shops].some(v => (v||"").toLowerCase().includes(q)));
+  $("rCount").textContent = `${rows.length} of ${regs.length} registration${regs.length===1?"":"s"}`;
+  $("rBody").innerHTML = rows.length ? rows.map(r => `<tr><td class="dt">${fmtDT(r.created_at)}</td><td>${esc(r.full_name)}</td><td class="ph">${esc(r.phone)}</td><td>${esc(r.email||"")}</td><td>${esc(r.city||"")}</td><td>${esc(r.shops||"")}</td></tr>`).join("")
+    : `<tr><td colspan="6" class="dt">${regs.length ? "No registrations match." : "No registrations yet. They'll appear here when people sign up on the home page."}</td></tr>`;
+}
+$("rSearch").oninput = renderRegs;
 $("tabShip").onclick = () => setTab("ship");
 $("tabComp").onclick = () => { setTab("comp"); renderCompanies(); };
 
