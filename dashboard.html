@@ -3,18 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="theme.js"></script>
 <meta name="robots" content="noindex,nofollow">
 <title>JustBuy Client Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 :root{
+  --err-bg:#fdecea; --err-fg:#8c1d18; --ok-bg:#e5f3e6; --okmsg-fg:#1e5a22; --warn-bg:#fff2dc; --brand-bg:#fdeceb; --pill-bg:#eeeeee; --pill-fg:#333333; --warn:#b26a00;
+
   --bg:#f6f4f3; --surface:#fff; --fg:#231a19; --muted:#6e6360; --line:#e6dfdd; --soft:#faf7f6;
   --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#fff; --ok:#2f7d32; --warn:#b26a00;
   --edit:#e6f4d6; --edit-line:#7fb84a; --edit-fg:#1f3d0c;
   --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}
+
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
 button,input{font:inherit;color:inherit}
@@ -27,7 +33,7 @@ button,input{font:inherit;color:inherit}
 .btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line);font-weight:700;padding:7px 14px;min-height:0}
 .btn.ghost:hover{border-color:var(--muted)}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:2px}
-.err{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:#fdecea;color:#8c1d18;font-size:14px}
+.err{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:var(--err-bg);color:var(--err-fg);font-size:14px}
 h2.sec{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:800}
 
 /* Sign in */
@@ -71,8 +77,8 @@ h2.sec{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--
 .ship .tn{font:600 14px var(--font-num)}
 .ship .ds{color:var(--muted);font-size:14px;grid-column:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ship .when{color:var(--muted);font-size:12px;text-align:right;grid-column:2}
-.pill{display:inline-block;font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;background:#fdeceb;color:var(--brand-dark);white-space:nowrap;justify-self:end}
-.pill.done{background:#e5f3e6;color:var(--ok)} .pill.hold{background:#fff2dc;color:var(--warn)}
+.pill{display:inline-block;font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--brand-bg);color:var(--brand-dark);white-space:nowrap;justify-self:end}
+.pill.done{background:var(--ok-bg);color:var(--ok)} .pill.hold{background:var(--warn-bg);color:var(--warn)}
 .body{padding:16px}
 .steps{list-style:none;margin:4px 0 8px;padding:0;display:grid;grid-template-columns:repeat(6,1fr)}
 .steps li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12px;color:var(--muted);position:relative;z-index:1;padding:0 2px}
@@ -146,6 +152,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
 
   <!-- SIGN IN -->
   <section id="gate" class="card">
+    <div style="float:right;margin-left:12px" data-theme-slot></div>
     <h1><b>JustBuy</b> client dashboard</h1>
     <p>Enter the company access code we sent you to see your shipments and use the price calculator.</p>
     <form id="gateForm">
@@ -161,7 +168,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
   <div id="app" class="hidden">
     <div class="top">
       <div><div class="eyebrow">JustBuy client dashboard</div><h1 id="coName"></h1></div>
-      <div class="act"><button class="btn ghost" id="refresh">Refresh</button><button class="btn ghost" id="signOut">Sign out</button></div>
+      <div class="act"><span data-theme-slot></span><button class="btn ghost" id="refresh">Refresh</button><button class="btn ghost" id="signOut">Sign out</button></div>
     </div>
     <nav class="tabs" role="tablist">
       <button class="tab on" id="tabS" role="tab" aria-selected="true">Shipments</button>

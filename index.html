@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="theme.js"></script>
 <title>JustBuy · Shop US &amp; UK stores, delivered to Tanzania</title>
 <meta name="description" content="Register free with JustBuy to get US and UK shipping addresses. Shop Amazon, eBay and more, and we bring your orders to Tanzania with clear, upfront pricing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,20 +11,17 @@
 <style>
 /* Layout: sticky top bar → hero with a shipping-label visual → how it works → why → register (reveals addresses) → price calculator → tracking → business band → footer */
 :root{
+  --err-bg:#fdecea; --err-fg:#8c1d18; --ok-bg:#e5f3e6; --okmsg-fg:#1e5a22; --warn-bg:#fff2dc; --brand-bg:#fdeceb; --pill-bg:#eeeeee; --pill-fg:#333333; --warn:#b26a00;
+
   --bg:#f7f5f4; --surface:#ffffff; --fg:#231a19; --muted:#6e6360; --line:#e7e0de; --soft:#fbf3f2;
   --brand:#c0302a; --brand-dark:#9e2620; --brand-fg:#ffffff; --ink:#1d1514; --ink-fg:#f6efed;
   --edit:#e6f4d6; --edit-line:#7fb84a; --edit-fg:#1f3d0c; --ok:#2f7d32;
   --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e;
-  --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed;
-  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e;
-  --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed;
-  --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; color-scheme:dark}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171312; --surface:#221c1b; --fg:#f3ecea; --muted:#a89d9a; --line:#3a312f; --soft:#2a1f1e; --brand:#e5574f; --brand-dark:#c8443d; --brand-fg:#ffffff; --ink:#0f0b0a; --ink-fg:#f6efed; --edit:#1f3014; --edit-line:#6aa83a; --edit-fg:#d9f0c4; --ok:#7cc47f; --warn:#f0b44c; --hold:#b48cff; --err-bg:#3d1c1a; --err-fg:#ffb4ab; --ok-bg:#1c3320; --okmsg-fg:#a8dcaa; --warn-bg:#3a2b10; --brand-bg:#3d1f1d; --pill-bg:#332a29; --pill-fg:#e8dfdd; color-scheme:dark}
+
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:72px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -117,7 +115,7 @@ section.block.alt{background:var(--surface);border-block:1px solid var(--line)}
 .form input{font:16px var(--font-ui);padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);width:100%}
 .form input:focus{border-color:var(--brand);outline:3px solid color-mix(in srgb,var(--brand) 20%,transparent)}
 .fine{font-size:13px;color:var(--muted);margin:0}
-.err{padding:10px 12px;border-radius:8px;background:#fdecea;color:#8c1d18;font-size:14px;margin:0}
+.err{padding:10px 12px;border-radius:8px;background:var(--err-bg);color:var(--err-fg);font-size:14px;margin:0}
 .reg-points{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:10px}
 .reg-points li{padding-left:28px;position:relative}
 .reg-points li::before{content:"";position:absolute;left:0;top:6px;width:16px;height:16px;border-radius:4px;background:var(--brand)}
@@ -209,9 +207,10 @@ footer.site a{color:var(--muted)}
       <a href="#how">How it works</a>
       <a href="#prices">Prices</a>
       <a href="#track">Track</a>
-      <a class="keep" href="addresses.html">My addresses</a>
+      <a class="keep" href="account.html">My account</a>
       <a href="dashboard.html">Business login</a>
     </nav>
+    <span data-theme-slot></span>
     <a class="btn small" href="#register"><span class="lg">Get your address</span><span class="sm">Register</span></a>
   </div>
 </header>
@@ -277,11 +276,11 @@ footer.site a{color:var(--muted)}
       <div>
         <div class="eyebrow">Register</div>
         <div class="head" style="margin-bottom:0"><h2>Get your US &amp; UK shipping addresses</h2>
-        <p>It's free and takes a minute. You'll see your addresses on your My addresses page as soon as you register.</p></div>
+        <p>It's free and takes a minute. You'll get your own account with your addresses, your packages and their updates.</p></div>
         <ul class="reg-points">
           <li>One address in the United States, one in the United Kingdom</li>
           <li>Use them at checkout on any US or UK online store</li>
-          <li>We use your phone number to reach you about your parcels</li>
+          <li>Your phone number is your ID. We use it to match arriving parcels to your account</li>
         </ul>
       </div>
       <div class="panel">
@@ -295,15 +294,19 @@ footer.site a{color:var(--muted)}
             <label>City / town <span class="opt">optional</span><input id="rCity" autocomplete="address-level2" placeholder="e.g. Dar es Salaam" maxlength="80"></label>
             <label>Shops you use <span class="opt">optional</span><input id="rShops" placeholder="e.g. Amazon, Shein" maxlength="300"></label>
           </div>
-          <button class="btn" id="rBtn" type="submit">Register and get my addresses</button>
+          <div class="two">
+            <label>Choose a PIN <span class="opt">4–6 digits</span><input id="rPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"></label>
+            <label>Repeat PIN<input id="rPin2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"></label>
+          </div>
+          <button class="btn" id="rBtn" type="submit">Create my account</button>
           <p class="fine">We only use your details to contact you about your parcels.</p>
-          <p class="fine">Already registered? <a class="ext" href="addresses.html">Find your addresses</a></p>
+          <p class="fine">Already registered? <a class="ext" href="account.html">Sign in to My account</a> with your phone number and PIN.</p>
           <div id="rMsg"></div>
         </form>
         <div id="regDone" class="hidden">
-          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Your US and UK addresses are on your My addresses page.</div></div></div>
-          <a class="btn" href="addresses.html" style="width:100%;margin-top:12px">View my addresses</a>
-          <p class="fine" style="margin-top:12px"><button class="cp" id="rAgain" type="button">Register someone else</button></p>
+          <div class="done-head"><span class="tick">✓</span><div><strong id="rHello">You're registered</strong><div class="fine">Your addresses, packages and profile are in My account.</div></div></div>
+          <a class="btn" href="account.html" style="width:100%;margin-top:12px">Open My account</a>
+          <p class="fine" style="margin-top:12px"><button class="cp" id="rAgain" type="button">Register someone else on this device</button></p>
         </div>
       </div>
     </div>
@@ -388,7 +391,7 @@ footer.site a{color:var(--muted)}
 </main>
 
 <footer class="site">
-  <div class="wrap"><span>© <span id="yr"></span> JustBuy · justbuy.shop</span><span><a href="#register">Register</a> · <a href="addresses.html">My addresses</a> · <a href="#prices">Prices</a> · <a href="#track">Track</a> · <a href="dashboard.html">Business login</a></span></div>
+  <div class="wrap"><span>© <span id="yr"></span> JustBuy · justbuy.shop</span><span><a href="#register">Register</a> · <a href="account.html">My account</a> · <a href="#prices">Prices</a> · <a href="#track">Track</a> · <a href="dashboard.html">Business login</a></span></div>
 </footer>
 
 <script>
@@ -513,11 +516,11 @@ calc();
 /* ---- Registration: addresses come from the database only after registering ---- */
 (function(){
   const SB_URL="https://icenxafytlodugspnzfj.supabase.co", SB_KEY="sb_publishable_HrColFiBPmoUvmQdyvxvrw_lqmpqrXp"; // public key, safe to ship
-  const KEY="justbuy-addresses";
+  const TOKEN_KEY="justbuy-account-token";
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const keep={get(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch{return null;}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v));}catch{}},clear(){try{localStorage.removeItem(KEY);}catch{}}};
-  function showRegistered(name){
-    $("rHello").textContent=name?`You're registered, ${name.split(" ")[0]}`:"You're registered";
+  const tok={get(){try{return localStorage.getItem(TOKEN_KEY)||sessionStorage.getItem(TOKEN_KEY);}catch{return null;}},set(t){try{localStorage.setItem(TOKEN_KEY,t);}catch{}}};
+  function showRegistered(){
+    $("rHello").textContent="You're signed in to JustBuy";
     $("regForm").classList.add("hidden"); $("regDone").classList.remove("hidden");
   }
   $("regForm").addEventListener("submit",async e=>{
@@ -527,18 +530,24 @@ calc();
     if(name.length<2){say("Please enter your full name.");$("rName").focus();return;}
     if(phone.replace(/\D/g,"").length<9){say("Please enter a valid phone number.");$("rPhone").focus();return;}
     if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){say("Please enter a valid email address, or leave it empty.");$("rEmail").focus();return;}
+    const pin=$("rPin").value.trim();
+    if(!/^\d{4,6}$/.test(pin)){say("Choose a PIN of 4 to 6 digits. You'll use it with your phone number to sign in.");$("rPin").focus();return;}
+    if(pin!==$("rPin2").value.trim()){say("The two PINs don't match.");$("rPin2").focus();return;}
     say(""); $("rBtn").disabled=true; $("rBtn").textContent="Registering…";
     try{
-      const res=await fetch(SB_URL+"/rest/v1/rpc/register_customer",{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},
-        body:JSON.stringify({p_name:name,p_phone:phone,p_email:email||null,p_city:$("rCity").value.trim()||null,p_shops:$("rShops").value.trim()||null})});
+      const res=await fetch(SB_URL+"/rest/v1/rpc/consumer_register",{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},
+        body:JSON.stringify({p_name:name,p_phone:phone,p_pin:pin,p_email:email||null,p_city:$("rCity").value.trim()||null,p_shops:$("rShops").value.trim()||null})});
       const data=await res.json().catch(()=>null);
-      if(!res.ok){say((data&&data.message)||"Registration didn't go through. Please try again.");return;}
-      keep.set({name,addresses:data}); location.href="addresses.html";
+      if(!res.ok){
+        const m=(data&&data.message)||"Registration didn't go through. Please try again.";
+        $("rMsg").innerHTML=`<p class="err">${esc(m)}${/already registered/i.test(m)?` <a class="ext" href="account.html">Go to My account</a>`:""}</p>`;return;}
+      tok.set(data.token); location.href="account.html#addresses";
     }catch{ say("We couldn't reach JustBuy. Check your internet connection and try again."); }
-    finally{ $("rBtn").disabled=false; $("rBtn").textContent="Register and get my addresses"; }
+    finally{ $("rBtn").disabled=false; $("rBtn").textContent="Create my account"; }
   });
-  $("rAgain").onclick=()=>{keep.clear();$("regForm").reset();$("regDone").classList.add("hidden");$("regForm").classList.remove("hidden");$("rName").focus();};
-  const saved=keep.get(); if(saved&&Array.isArray(saved.addresses)) showRegistered(saved.name);
+  $("rAgain").onclick=()=>{$("regForm").reset();$("regDone").classList.add("hidden");$("regForm").classList.remove("hidden");$("rName").focus();};
+  if(tok.get()) showRegistered();
+  try{localStorage.removeItem("justbuy-addresses");}catch{} // old address cache from before accounts
 })();
 
 /* ---- Decorative barcode + year ---- */
