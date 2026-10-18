@@ -8,6 +8,8 @@
 <title>Company Dashboard · JustBuy</title>
 <link rel="stylesheet" href="jb.css">
 <script src="jb.js" defer></script>
+<script src="notify.js"></script>
+<style>.lbl-s{display:none}@media (max-width:560px){.lbl-l{display:none}.lbl-s{display:inline}}</style>
 </head>
 <body>
 <header class="nav">
@@ -15,6 +17,7 @@
     <a class="brand" href="index.html">Just<b>Buy</b></a>
     <nav class="nav-links" aria-label="Main"><a href="index.html#track">Track</a></nav>
     <div class="nav-actions">
+      <button class="iconbtn bell" id="bell" type="button" data-label="Notifications" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
       <span data-theme-slot></span>
       <button class="btn sm gray" id="refresh" type="button">Refresh</button>
       <button class="btn sm gray" id="signOut" type="button">Log out</button>
@@ -30,7 +33,8 @@
     <div class="tabbar">
       <div class="seg" role="tablist" aria-label="Dashboard sections">
         <button type="button" id="tabS" role="tab" aria-selected="true">Shipments</button>
-        <button type="button" id="tabC" role="tab" aria-selected="false">Price calculator</button>
+        <button type="button" id="tabN" role="tab" aria-selected="false" data-label="Notifications"><span class="lbl-l">Notifications</span><span class="lbl-s">Alerts</span><span class="tbadge" id="tabBadge" hidden></span></button>
+        <button type="button" id="tabC" role="tab" aria-selected="false"><span class="lbl-l">Price calculator</span><span class="lbl-s">Calculator</span></button>
         <button type="button" id="tabA" role="tab" aria-selected="false">Addresses</button>
       </div>
     </div>
@@ -42,6 +46,11 @@
         <span class="fresh" id="fresh"></span>
       </div>
       <div class="ships" id="ships"></div>
+    </section>
+
+    <section id="viewN" class="view hidden" role="tabpanel">
+      <div class="nhead"><p class="caption" style="font-size:15px;margin:0">Every update on your company's shipments. Tap one to see the shipment.</p><button class="btn sm gray" id="markAll" type="button">Mark all as read</button></div>
+      <div class="nlist" id="nList"><div class="empty">Loading notifications…</div></div>
     </section>
 
     <section id="viewA" class="view hidden" role="tabpanel">
@@ -144,24 +153,51 @@ function showApp(){
   $("loading").classList.add("hidden"); $("app").classList.remove("hidden");
   $("coName").textContent = data.company;
   document.title = data.company + " · JustBuy";
-  renderShipments(); calc(); if (window.JB) JB.refreshSegments();
+  renderShipments(); calc(); initNotifications(); if (window.JB) JB.refreshSegments();
 }
 $("signOut").onclick = () => { store.clear(); location.replace("login.html?as=company"); };
 $("refresh").onclick = async () => {
   $("refresh").disabled = true;
-  try { const d = await fetchDashboard(code); if (!d) { store.clear(); return toLogin("expired"); } data = d; renderShipments(); }
+  try { const d = await fetchDashboard(code); if (!d) { store.clear(); return toLogin("expired"); } data = d; renderShipments(); if (notif) notif.refresh(); }
   catch { $("fresh").textContent = "Couldn't refresh. Check your connection."; }
   finally { $("refresh").disabled = false; }
 };
 
 /* ---------- Tabs ---------- */
 function tab(t){
-  [["tabS","viewS","s"],["tabC","viewC","c"],["tabA","viewA","a"]].forEach(([b,v,k]) => {
+  if (notif) { if (t === "n") notif.opened(); else notif.closed(); }
+  [["tabS","viewS","s"],["tabN","viewN","n"],["tabC","viewC","c"],["tabA","viewA","a"]].forEach(([b,v,k]) => {
     $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
   });
   if (t === "a") loadAddresses();
 }
-$("tabS").onclick = () => tab("s"); $("tabC").onclick = () => tab("c"); $("tabA").onclick = () => tab("a");
+$("tabS").onclick = () => tab("s"); $("tabN").onclick = () => tab("n"); $("tabC").onclick = () => tab("c"); $("tabA").onclick = () => tab("a");
+$("bell").onclick = () => tab("n");
+
+/* ---------- Notifications ---------- */
+let notif = null;
+function initNotifications(){
+  if (notif) return;
+  notif = JBNotify({
+    load: () => rpcPost("company_notifications", { p_code: code }),
+    markRead: () => rpcPost("company_mark_notifications_read", { p_code: code }),
+    list: $("nList"), badges: [$("bellBadge"), $("tabBadge")],
+    onOpen: tn => openShipment(tn)
+  });
+}
+async function rpcPost(fn, args){
+  const res = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, { method: "POST", headers: { "Content-Type": "application/json", apikey: SB_KEY }, body: JSON.stringify(args) });
+  if (!res.ok) throw new Error("network");
+  return res.json();
+}
+$("markAll").onclick = () => notif && notif.markAll();
+function openShipment(tn){
+  filter = "all"; $("q").value = ""; tab("s"); renderShipments();
+  const el = [...document.querySelectorAll("#ships details.ship")].find(d => d.dataset.tn === tn);
+  if (!el) return;
+  el.open = true; el.scrollIntoView({ block: "center", behavior: "smooth" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+}
 
 /* ---------- Shipping addresses ---------- */
 let addrLoaded = false;
@@ -211,7 +247,7 @@ function renderShipments(){
     const g = group(s.status), cur = stageIndex(s), delivered = s.status === "Delivered";
     const route = [s.origin, s.destination].filter(Boolean).map(esc).join(" → ");
     const facts = [["Contents",s.description],["From",s.origin],["To",s.destination],["Pieces",s.pieces],["Weight",s.weight_kg!=null?`${Number(s.weight_kg)} kg`:null],["Expected arrival",s.eta?fmtD(s.eta):null]].filter(f => f[1]!=null && f[1]!=="");
-    return `<details class="ship">
+    return `<details class="ship" data-tn="${esc(s.tracking_no)}">
       <summary>
         <span class="tn">${esc(s.tracking_no)}</span><span class="pill ${g}">${esc(s.status)}</span>
         <span class="ds">${esc(s.description || route || "Shipment")}</span><span class="when">${s.eta && !delivered ? "ETA " + fmtShort(s.eta+"T12:00:00") : "Updated " + fmtShort(s.updated_at)}</span>

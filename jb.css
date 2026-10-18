@@ -293,3 +293,30 @@ table.bd td.t{color:var(--muted);font-size:14px;font-weight:400}
   :root{--line:rgba(0,0,0,.35)}
   .card,.group,.tile,.ship,.addr,.stat,.idrow>div,.empty{box-shadow:0 0 0 1px var(--line-strong)}
 }
+
+/* ---------- Notifications ---------- */
+.bell{position:relative}
+.badge{position:absolute;top:-3px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--brand);color:#fff;
+  font-size:11px;font-weight:700;line-height:18px;text-align:center;letter-spacing:0;box-shadow:0 0 0 2px var(--bg);pointer-events:none;
+  animation:badgeIn 260ms var(--spring)}
+@keyframes badgeIn{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.tbadge{display:inline-block;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--brand);color:#fff;
+  font-size:11px;font-weight:700;line-height:18px;text-align:center;letter-spacing:0;vertical-align:1px}
+.nhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.nlist{display:grid;gap:8px}
+.n-item{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:start;width:100%;
+  padding:14px 16px;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow-1);transition:transform var(--t-fast) ease-out,background-color 160ms ease}
+.n-item:active{transform:scale(.985)}
+.n-item:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 55%,transparent);outline-offset:2px}
+.n-item.unread{background:color-mix(in srgb,var(--brand) 5%,var(--surface))}
+.n-ic{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--brand-tint);color:var(--brand)}
+.n-ic.done{background:var(--ok-tint);color:var(--ok)} .n-ic.hold{background:var(--warn-tint);color:var(--warn)}
+.n-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.n-title{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:16px}
+.n-title .mono{font-size:13px;color:var(--muted)}
+.n-item:not(.unread) .n-title b{font-weight:500}
+.n-body{font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.n-time{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:12px;color:var(--faint);white-space:nowrap}
+.n-dot{width:9px;height:9px;border-radius:50%;background:var(--brand)}
+.ship.flash{animation:flash 1.4s var(--spring)}
+@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--brand),var(--shadow-1)}100%{box-shadow:var(--shadow-1)}}
