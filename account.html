@@ -8,6 +8,8 @@
 <title>My Account · JustBuy</title>
 <link rel="stylesheet" href="jb.css">
 <script src="jb.js" defer></script>
+<script src="notify.js"></script>
+<style>.lbl-s{display:none}@media (max-width:560px){.lbl-l{display:none}.lbl-s{display:inline}}</style>
 </head>
 <body>
 <header class="nav">
@@ -15,6 +17,7 @@
     <a class="brand" href="index.html">Just<b>Buy</b></a>
     <nav class="nav-links" aria-label="Main"><a href="index.html#prices">Prices</a><a href="index.html#track">Track</a></nav>
     <div class="nav-actions">
+      <button class="iconbtn bell" id="bell" type="button" data-label="Notifications" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
       <span data-theme-slot></span>
       <button class="btn sm gray" id="refresh" type="button">Refresh</button>
       <button class="btn sm gray" id="signOut" type="button">Log out</button>
@@ -31,9 +34,10 @@
     </div>
     <div class="tabbar">
       <div class="seg" role="tablist" aria-label="Account sections">
-        <button type="button" id="tabA" role="tab" aria-selected="true">My addresses</button>
-        <button type="button" id="tabP" role="tab" aria-selected="false">My packages <span id="pkCount"></span></button>
-        <button type="button" id="tabR" role="tab" aria-selected="false">My profile</button>
+        <button type="button" id="tabA" role="tab" aria-selected="true"><span class="lbl-l">My addresses</span><span class="lbl-s">Addresses</span></button>
+        <button type="button" id="tabP" role="tab" aria-selected="false"><span class="lbl-l">My packages</span><span class="lbl-s">Packages</span> <span id="pkCount"></span></button>
+        <button type="button" id="tabN" role="tab" aria-selected="false" data-label="Notifications"><span class="lbl-l">Notifications</span><span class="lbl-s">Alerts</span><span class="tbadge" id="tabBadge" hidden></span></button>
+        <button type="button" id="tabR" role="tab" aria-selected="false"><span class="lbl-l">My profile</span><span class="lbl-s">Profile</span></button>
       </div>
     </div>
 
@@ -50,6 +54,11 @@
         <span class="fresh" id="fresh"></span>
       </div>
       <div class="ships" id="ships"></div>
+    </section>
+
+    <section id="viewN" class="view hidden" role="tabpanel">
+      <div class="nhead"><p class="caption" style="font-size:15px;margin:0">Every update on your packages. Tap one to see the package.</p><button class="btn sm gray" id="markAll" type="button">Mark all as read</button></div>
+      <div class="nlist" id="nList"><div class="empty">Loading notifications…</div></div>
     </section>
 
     <section id="viewR" class="view hidden" role="tabpanel">
@@ -130,7 +139,8 @@ async function start(t){
     if (!d) { tok.clear(); return toLogin("expired"); }
     me = d; render();
     $("loading").classList.add("hidden"); $("app").classList.remove("hidden");
-    const h = location.hash.replace("#",""); tab(h === "packages" ? "p" : h === "profile" ? "r" : "a");
+    initNotifications();
+    const h = location.hash.replace("#",""); tab(h === "packages" ? "p" : h === "profile" ? "r" : h === "notifications" ? "n" : "a");
   } catch (err) {
     $("loading").innerHTML = `<div class="empty"><p style="margin:0 0 14px">${esc(netErr(err))}</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
   }
@@ -142,19 +152,41 @@ $("signOut").onclick = async () => {
 };
 $("refresh").onclick = async () => {
   $("refresh").disabled = true;
-  try { const d = await rpc("consumer_me", { p_token: token }); if (!d) return $("signOut").click(); me = d; render(); }
+  try { const d = await rpc("consumer_me", { p_token: token }); if (!d) return $("signOut").click(); me = d; render(); if (notif) notif.refresh(); }
   catch { $("fresh").textContent = "Couldn't refresh. Check your connection."; }
   finally { $("refresh").disabled = false; }
 };
 
 /* ---------- Tabs ---------- */
 function tab(t){
-  [["tabA","viewA","a","addresses"],["tabP","viewP","p","packages"],["tabR","viewR","r","profile"]].forEach(([b,v,k,h]) => {
+  if (notif) { if (t === "n") notif.opened(); else notif.closed(); }
+  [["tabA","viewA","a","addresses"],["tabP","viewP","p","packages"],["tabN","viewN","n","notifications"],["tabR","viewR","r","profile"]].forEach(([b,v,k,h]) => {
     $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
     if (t===k) history.replaceState(null, "", "#"+h);
   });
 }
-$("tabA").onclick = () => tab("a"); $("tabP").onclick = () => tab("p"); $("tabR").onclick = () => tab("r");
+$("tabA").onclick = () => tab("a"); $("tabP").onclick = () => tab("p"); $("tabN").onclick = () => tab("n"); $("tabR").onclick = () => tab("r");
+$("bell").onclick = () => { tab("n"); $("viewN").scrollIntoView({ block: "start", behavior: "smooth" }); };
+
+/* ---------- Notifications ---------- */
+let notif = null;
+function initNotifications(){
+  if (notif) return;
+  notif = JBNotify({
+    load: () => rpc("consumer_notifications", { p_token: token }),
+    markRead: () => rpc("consumer_mark_notifications_read", { p_token: token }),
+    list: $("nList"), badges: [$("bellBadge"), $("tabBadge")],
+    onOpen: tn => openPackage(tn)
+  });
+}
+$("markAll").onclick = () => notif && notif.markAll();
+function openPackage(tn){
+  filter = "all"; $("q").value = ""; tab("p"); renderPackages();
+  const el = [...document.querySelectorAll("#ships details.ship")].find(d => d.dataset.tn === tn);
+  if (!el) return;
+  el.open = true; el.scrollIntoView({ block: "center", behavior: "smooth" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+}
 
 /* ---------- Render ---------- */
 function render(){
@@ -205,7 +237,7 @@ function renderPackages(){
   $("ships").innerHTML = rows.map(s => {
     const g = group(s.status), cur = stageIndex(s), delivered = s.status === "Delivered";
     const facts = [["Contents",s.description],["From",s.origin],["To",s.destination],["Pieces",s.pieces],["Weight",s.weight_kg!=null?`${Number(s.weight_kg)} kg`:null],["Expected arrival",s.eta?fmtD(s.eta):null]].filter(f => f[1]!=null && f[1]!=="");
-    return `<details class="ship">
+    return `<details class="ship" data-tn="${esc(s.tracking_no)}">
       <summary>
         <span class="tn">${esc(s.tracking_no)}</span><span class="pill ${g}">${esc(s.status)}</span>
         <span class="ds">${esc(s.description || "Package")}</span><span class="when">${s.eta && !delivered ? "ETA " + fmtShort(s.eta+"T12:00:00") : "Updated " + fmtShort(s.updated_at)}</span>
