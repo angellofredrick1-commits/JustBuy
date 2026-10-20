@@ -320,3 +320,61 @@ table.bd td.t{color:var(--muted);font-size:14px;font-weight:400}
 .n-dot{width:9px;height:9px;border-radius:50%;background:var(--brand)}
 .ship.flash{animation:flash 1.4s var(--spring)}
 @keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--brand),var(--shadow-1)}100%{box-shadow:var(--shadow-1)}}
+
+/* ---------- App shell with left sidebar ---------- */
+.container.wide{max-width:1200px}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:40px;align-items:start;padding-top:30px}
+.side{position:sticky;top:80px;display:flex;flex-direction:column;gap:18px}
+.side .who{padding:0 12px}
+.side .who .label{color:var(--brand);text-transform:none;letter-spacing:-.01em;font-size:13px}
+.side .who b{display:block;font-size:17px;letter-spacing:-.02em;line-height:1.25;overflow-wrap:anywhere}
+.side .who span.mono{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.sidenav{display:flex;flex-direction:column;gap:2px}
+.sidenav>button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;letter-spacing:-.01em;
+  color:var(--fg);cursor:pointer;transition:background-color 160ms ease,color 160ms ease,transform var(--t-fast) ease-out;white-space:nowrap}
+.sidenav>button svg{flex:none;color:var(--muted);transition:color 160ms ease}
+.sidenav>button:hover{background:var(--surface-2)}
+.sidenav>button:active{transform:scale(.98)}
+.sidenav>button[aria-selected="true"]{background:var(--brand-tint);color:var(--brand);font-weight:600}
+.sidenav>button[aria-selected="true"] svg{color:var(--brand)}
+.sidenav>button:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 55%,transparent);outline-offset:1px}
+.sidenav .tbadge{margin-left:auto}
+.sidenav .count{margin-left:auto;font-size:13px;color:var(--muted);font-weight:500}
+.main-col{min-width:0}
+.main-col .app-head{padding-top:0}
+.main-col .app-head h1{font-size:clamp(28px,3.4vw,36px)}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0;padding-top:0}
+  .side{min-width:0;top:56px;z-index:20;margin:0 -22px;padding:8px 22px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:inset 0 -1px 0 var(--line)}
+  .side .who{display:none}
+  .sidenav{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:4px;-webkit-overflow-scrolling:touch}
+  .sidenav::-webkit-scrollbar{display:none}
+  .sidenav>button{flex:none;padding:8px 12px;font-size:14px}
+  .sidenav .tbadge,.sidenav .count{margin-left:2px}
+  .main-col .app-head{padding-top:22px}
+}
+@media (prefers-reduced-transparency: reduce){@media (max-width:860px){.side{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none}}}
+
+/* Flags on address cards */
+.flag{display:inline-block;width:28px;height:19px;border-radius:4px;overflow:hidden;flex:none;box-shadow:0 0 0 1px var(--line);vertical-align:-3px}
+.flag svg{display:block;width:100%;height:100%}
+.addr header h3{display:flex;align-items:center;gap:10px}
+.addr dd.cjk{font-family:var(--font);font-size:16px;letter-spacing:0}
+.addr .addr-note{margin:0 18px 16px;padding:12px 14px;border-radius:12px;background:var(--surface-2);font-size:14px;line-height:1.45;color:var(--muted)}
+.addr .addr-note b{color:var(--fg)}
+
+/* Claims */
+.claim-form{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:12px;align-items:end}
+@media (max-width:760px){.claim-form{grid-template-columns:1fr}}
+.claims{display:grid;gap:10px;margin-top:18px}
+.claim{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow-1);padding:16px 18px;display:grid;gap:10px}
+.claim .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.claim .top .mono{font-weight:600;font-size:15px}
+.claim .sub{color:var(--muted);font-size:14px}
+.claim .found{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;padding:12px 14px;border-radius:12px;background:var(--ok-tint)}
+.claim .found .k{display:block;font-size:12px;color:var(--muted)}
+.claim .found .v{display:block;font-weight:600}
+.pill.p-req{background:var(--surface-2);color:var(--muted)}
+.pill.p-found{background:var(--ok-tint);color:var(--ok)}
+.pill.p-shipped{background:var(--brand-tint);color:var(--brand)}
+.pill.p-rejected{background:var(--surface-2);color:var(--faint)}

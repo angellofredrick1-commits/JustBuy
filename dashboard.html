@@ -13,7 +13,7 @@
 </head>
 <body>
 <header class="nav">
-  <div class="container">
+  <div class="container wide">
     <a class="brand" href="index.html">Just<b>Buy</b></a>
     <nav class="nav-links" aria-label="Main"><a href="index.html#track">Track</a></nav>
     <div class="nav-actions">
@@ -25,19 +25,22 @@
   </div>
 </header>
 
-<main class="container">
+<main class="container wide">
   <div id="loading" style="padding:80px 0;text-align:center;color:var(--muted)">Loading your dashboard…</div>
 
-  <div id="app" class="hidden">
-    <div class="app-head"><div><p class="eyebrow" style="margin:0">Company dashboard</p><h1 id="coName"></h1></div></div>
-    <div class="tabbar">
-      <div class="seg" role="tablist" aria-label="Dashboard sections">
-        <button type="button" id="tabS" role="tab" aria-selected="true">Shipments</button>
-        <button type="button" id="tabN" role="tab" aria-selected="false" data-label="Notifications"><span class="lbl-l">Notifications</span><span class="lbl-s">Alerts</span><span class="tbadge" id="tabBadge" hidden></span></button>
-        <button type="button" id="tabC" role="tab" aria-selected="false"><span class="lbl-l">Price calculator</span><span class="lbl-s">Calculator</span></button>
-        <button type="button" id="tabA" role="tab" aria-selected="false">Addresses</button>
-      </div>
-    </div>
+  <div id="app" class="hidden shell">
+    <aside class="side">
+      <div class="who"><span class="label">Company dashboard</span><b id="coName"></b></div>
+      <nav class="sidenav" role="tablist" aria-label="Dashboard sections" aria-orientation="vertical">
+        <button type="button" id="tabS" role="tab" aria-selected="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/><path d="M4 8.5 12 13l8-4.5M12 13v7"/></svg><span>Shipments</span><span class="count" id="shCount"></span></button>
+        <button type="button" id="tabN" role="tab" aria-selected="false" data-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg><span>Notifications</span><span class="tbadge" id="tabBadge" hidden></span></button>
+        <button type="button" id="tabC" role="tab" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg><span>Price calculator</span></button>
+        <button type="button" id="tabA" role="tab" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Addresses</span></button>
+      </nav>
+    </aside>
+
+    <div class="main-col">
+    <div class="app-head"><div><p class="eyebrow" style="margin:0" id="coEyebrow">Company dashboard</p><h1 id="secTitle">Shipments</h1></div></div>
 
     <section id="viewS" class="view" role="tabpanel">
       <div class="stats" id="stats"></div>
@@ -54,7 +57,7 @@
     </section>
 
     <section id="viewA" class="view hidden" role="tabpanel">
-      <p class="caption" style="font-size:15px;margin:0 0 16px">Use these addresses when you order from US or UK online stores. Copy each line exactly as shown, including the reference number after the name or street.</p>
+      <p class="caption" style="font-size:15px;margin:0 0 16px">Use these addresses when you order from online stores and suppliers in China, the US or the UK. Copy each line exactly as shown, including the reference number after the name or street.</p>
       <div class="agrid" id="addrs"><div class="empty">Loading addresses…</div></div>
     </section>
 
@@ -105,6 +108,7 @@
     </section>
 
     <p class="foot">Questions about a shipment? Contact your JustBuy account manager.</p>
+    </div>
   </div>
 </main>
 
@@ -151,7 +155,8 @@ async function signIn(c){
 }
 function showApp(){
   $("loading").classList.add("hidden"); $("app").classList.remove("hidden");
-  $("coName").textContent = data.company;
+  $("coName").textContent = data.company; $("coEyebrow").textContent = data.company;
+  $("shCount").textContent = (data.shipments || []).length || "";
   document.title = data.company + " · JustBuy";
   renderShipments(); calc(); initNotifications(); if (window.JB) JB.refreshSegments();
 }
@@ -166,8 +171,9 @@ $("refresh").onclick = async () => {
 /* ---------- Tabs ---------- */
 function tab(t){
   if (notif) { if (t === "n") notif.opened(); else notif.closed(); }
-  [["tabS","viewS","s"],["tabN","viewN","n"],["tabC","viewC","c"],["tabA","viewA","a"]].forEach(([b,v,k]) => {
+  [["tabS","viewS","s","Shipments"],["tabN","viewN","n","Notifications"],["tabC","viewC","c","Price calculator"],["tabA","viewA","a","Shipping addresses"]].forEach(([b,v,k,title]) => {
     $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
+    if (t===k) { $("secTitle").textContent = title; if (innerWidth <= 860) $(b).scrollIntoView({ block: "nearest", inline: "center" }); }
   });
   if (t === "a") loadAddresses();
 }
@@ -211,8 +217,10 @@ async function loadAddresses(){
     addrLoaded = true;
     $("addrs").innerHTML = list.map(a => {
       const all = a.lines.map(l => l.value).join("\n");
-      return `<article class="addr"><header><h3>${esc(a.label)}</h3><button class="btn sm tinted" type="button" data-copy="${esc(all)}">Copy all</button></header>
-        <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl></article>`;
+      const flag = window.JB ? JB.flag(a.id) : "", cjk = v => window.JB && JB.isCJK(v) ? ' class="cjk" lang="zh"' : "";
+      const note = a.id === "cn" ? `<p class="addr-note"><b>Give this address to your Chinese supplier exactly as written,</b> and send JustBuy the supplier's tracking number so we can match the parcel to your company.</p>` : "";
+      return `<article class="addr"><header><h3>${flag}${esc(a.label)}</h3><button class="btn sm tinted" type="button" data-copy="${esc(all)}">Copy all</button></header>
+        <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd${cjk(l.value)}>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl>${note}</article>`;
     }).join("");
   } catch { $("addrs").innerHTML = `<div class="empty">We couldn't load the addresses. Check your connection and open this tab again.</div>`; }
 }

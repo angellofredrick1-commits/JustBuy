@@ -13,7 +13,7 @@
 </head>
 <body>
 <header class="nav">
-  <div class="container">
+  <div class="container wide">
     <a class="brand" href="index.html">Just<b>Buy</b></a>
     <nav class="nav-links" aria-label="Main"><a href="index.html#prices">Prices</a><a href="index.html#track">Track</a></nav>
     <div class="nav-actions">
@@ -25,24 +25,26 @@
   </div>
 </header>
 
-<main class="container">
+<main class="container wide">
   <div id="loading" style="padding:80px 0;text-align:center;color:var(--muted)">Loading your account…</div>
 
-  <div id="app" class="hidden">
-    <div class="app-head">
-      <div><p class="eyebrow" style="margin:0">My account</p><h1 id="hName"></h1><div class="meta mono" id="hMeta"></div></div>
-    </div>
-    <div class="tabbar">
-      <div class="seg" role="tablist" aria-label="Account sections">
-        <button type="button" id="tabA" role="tab" aria-selected="true"><span class="lbl-l">My addresses</span><span class="lbl-s">Addresses</span></button>
-        <button type="button" id="tabP" role="tab" aria-selected="false"><span class="lbl-l">My packages</span><span class="lbl-s">Packages</span> <span id="pkCount"></span></button>
-        <button type="button" id="tabN" role="tab" aria-selected="false" data-label="Notifications"><span class="lbl-l">Notifications</span><span class="lbl-s">Alerts</span><span class="tbadge" id="tabBadge" hidden></span></button>
-        <button type="button" id="tabR" role="tab" aria-selected="false"><span class="lbl-l">My profile</span><span class="lbl-s">Profile</span></button>
-      </div>
-    </div>
+  <div id="app" class="hidden shell">
+    <aside class="side">
+      <div class="who"><span class="label">My account</span><b id="hName"></b><span class="mono" id="hMeta"></span></div>
+      <nav class="sidenav" role="tablist" aria-label="Account sections" aria-orientation="vertical">
+        <button type="button" id="tabA" role="tab" aria-selected="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>My addresses</span></button>
+        <button type="button" id="tabP" role="tab" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/><path d="M4 8.5 12 13l8-4.5M12 13v7"/></svg><span>My packages</span><span class="count" id="pkCount"></span></button>
+        <button type="button" id="tabL" role="tab" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M11 8v6M8 11h6"/></svg><span>Claim a package</span><span class="count" id="clCount"></span></button>
+        <button type="button" id="tabN" role="tab" aria-selected="false" data-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg><span>Notifications</span><span class="tbadge" id="tabBadge" hidden></span></button>
+        <button type="button" id="tabR" role="tab" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.3 7.5-5.3s6.3 1.7 7.5 5.3"/></svg><span>My profile</span></button>
+      </nav>
+    </aside>
+
+    <div class="main-col">
+    <div class="app-head"><div><p class="eyebrow" style="margin:0" id="hHello">My account</p><h1 id="secTitle">My addresses</h1></div></div>
 
     <section id="viewA" class="view" role="tabpanel">
-      <p class="caption" style="font-size:15px;margin:0 0 16px">Use these addresses at checkout on any US or UK online store. Copy each line exactly as shown, including the reference number after the name or street.</p>
+      <p class="caption" style="font-size:15px;margin:0 0 16px">Use these addresses when you order from online stores and suppliers in China, the US or the UK. Copy each line exactly as shown, including the reference number after the name or street.</p>
       <div class="agrid" id="addrs"></div>
       <p class="note" style="margin-top:16px"><b>When you order,</b> keep your order confirmation. When your parcel reaches us, we add it to My packages using your phone number <span class="mono" id="aPhone"></span>, so check it's correct under My profile.</p>
     </section>
@@ -54,6 +56,19 @@
         <span class="fresh" id="fresh"></span>
       </div>
       <div class="ships" id="ships"></div>
+    </section>
+
+    <section id="viewL" class="view hidden" role="tabpanel">
+      <div class="card">
+        <p class="body-sm" style="margin:0 0 16px;color:var(--muted)">Ordered from a supplier in China? Enter the tracking number your supplier gave you. When the parcel reaches our China warehouse, we match it to you automatically and it shows here as <b style="color:var(--ok)">Package found</b>.</p>
+        <form class="claim-form" id="claimForm" novalidate>
+          <label class="field"><span>Supplier tracking number</span><input id="clTrk" class="code" autocomplete="off" spellcheck="false" placeholder="e.g. YT1234567890CN" maxlength="60"></label>
+          <label class="field"><span>What is it? <span class="opt">optional</span></span><input id="clDesc" maxlength="200" placeholder="e.g. 3 phone cases"></label>
+          <button class="btn" id="clBtn" type="submit" style="min-height:48px">Send request</button>
+        </form>
+        <div id="clMsg" role="status" aria-live="polite" style="margin-top:12px"></div>
+      </div>
+      <div class="claims" id="claims"></div>
     </section>
 
     <section id="viewN" class="view hidden" role="tabpanel">
@@ -93,6 +108,7 @@
     </section>
 
     <p class="foot">Questions about a package? Contact JustBuy with your customer number.</p>
+    </div>
   </div>
 </main>
 
@@ -139,8 +155,8 @@ async function start(t){
     if (!d) { tok.clear(); return toLogin("expired"); }
     me = d; render();
     $("loading").classList.add("hidden"); $("app").classList.remove("hidden");
-    initNotifications();
-    const h = location.hash.replace("#",""); tab(h === "packages" ? "p" : h === "profile" ? "r" : h === "notifications" ? "n" : "a");
+    initNotifications(); loadClaims();
+    const h = location.hash.replace("#",""); tab({ packages: "p", profile: "r", notifications: "n", claim: "l" }[h] || "a");
   } catch (err) {
     $("loading").innerHTML = `<div class="empty"><p style="margin:0 0 14px">${esc(netErr(err))}</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
   }
@@ -160,13 +176,65 @@ $("refresh").onclick = async () => {
 /* ---------- Tabs ---------- */
 function tab(t){
   if (notif) { if (t === "n") notif.opened(); else notif.closed(); }
-  [["tabA","viewA","a","addresses"],["tabP","viewP","p","packages"],["tabN","viewN","n","notifications"],["tabR","viewR","r","profile"]].forEach(([b,v,k,h]) => {
+  [["tabA","viewA","a","addresses","My addresses"],["tabP","viewP","p","packages","My packages"],["tabL","viewL","l","claim","Claim a package"],["tabN","viewN","n","notifications","Notifications"],["tabR","viewR","r","profile","My profile"]].forEach(([b,v,k,h,title]) => {
     $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
-    if (t===k) history.replaceState(null, "", "#"+h);
+    if (t===k) { history.replaceState(null, "", "#"+h); $("secTitle").textContent = title; if (innerWidth <= 860) $(b).scrollIntoView({ block: "nearest", inline: "center" }); }
   });
+  if (t === "l") loadClaims();
 }
-$("tabA").onclick = () => tab("a"); $("tabP").onclick = () => tab("p"); $("tabN").onclick = () => tab("n"); $("tabR").onclick = () => tab("r");
+$("tabA").onclick = () => tab("a"); $("tabP").onclick = () => tab("p"); $("tabL").onclick = () => tab("l"); $("tabN").onclick = () => tab("n"); $("tabR").onclick = () => tab("r");
 $("bell").onclick = () => { tab("n"); $("viewN").scrollIntoView({ block: "start", behavior: "smooth" }); };
+
+/* ---------- Claim a package ---------- */
+let claims = null;
+const CLAIM_PILL = { requested: ["p-req","Request sent"], found: ["p-found","Package found"], shipped: ["p-shipped","On its way"], rejected: ["p-rejected","Closed"] };
+async function loadClaims(){
+  if (!claims) $("claims").innerHTML = `<div class="empty">Loading your requests…</div>`;
+  try { claims = await rpc("consumer_claims", { p_token: token }); renderClaims(); } catch (err) { $("claims").innerHTML = `<div class="empty">${esc(netErr(err))}</div>`; }
+}
+function renderClaims(){
+  const open = (claims || []).filter(c => c.status === "requested").length;
+  $("clCount").textContent = open ? String(open) : "";
+  if (!claims || !claims.length) { $("claims").innerHTML = `<div class="empty">No requests yet. Add the tracking number from your supplier above.</div>`; return; }
+  $("claims").innerHTML = claims.map(c => {
+    const [cls, label] = CLAIM_PILL[c.status] || ["p-req", c.status];
+    const pk = c.package;
+    const found = pk ? `<div class="found">
+        <div><span class="k">Warehouse</span><span class="v">${esc(pk.warehouse || "China")}</span></div>
+        <div><span class="k">Received</span><span class="v">${fmtShort(pk.received_at)}</span></div>
+        ${pk.description ? `<div><span class="k">Contents</span><span class="v">${esc(pk.description)}</span></div>` : ""}
+        ${pk.pieces != null ? `<div><span class="k">Pieces</span><span class="v">${pk.pieces}</span></div>` : ""}
+        ${pk.weight_kg != null ? `<div><span class="k">Weight</span><span class="v">${Number(pk.weight_kg)} kg</span></div>` : ""}
+      </div>` : "";
+    const ship = c.jb_tracking ? `<p class="sub" style="margin:0">Now shipping as <a href="#packages" data-pkg="${esc(c.jb_tracking)}" class="mono">${esc(c.jb_tracking)}</a>. Follow it in My packages.</p>` : "";
+    const waiting = c.status === "requested" ? `<p class="sub" style="margin:0">Sent ${fmtShort(c.created_at)}. We'll match it as soon as the parcel arrives at our warehouse. <button class="btn plain" style="font-size:14px" data-withdraw="${c.id}">Withdraw</button></p>` : "";
+    const note = c.admin_note && c.status === "rejected" ? `<p class="sub" style="margin:0">${esc(c.admin_note)}</p>` : "";
+    return `<article class="claim"><div class="top"><span><span class="mono">${esc(c.supplier_tracking)}</span>${c.description ? ` <span class="sub">· ${esc(c.description)}</span>` : ""}</span><span class="pill ${cls}">${label}</span></div>${found}${ship}${waiting}${note}</article>`;
+  }).join("");
+}
+$("claimForm").onsubmit = async e => {
+  e.preventDefault();
+  const t = $("clTrk").value.trim();
+  if (t.replace(/[^A-Za-z0-9]/g, "").length < 4) { msg("clMsg", "Enter the tracking number your supplier gave you."); $("clTrk").focus(); return; }
+  $("clBtn").disabled = true; msg("clMsg", "");
+  try {
+    claims = await rpc("consumer_submit_claim", { p_token: token, p_tracking: t, p_description: $("clDesc").value.trim() || null });
+    const mine = claims.find(c => c.supplier_tracking === t);
+    $("claimForm").reset(); renderClaims();
+    msg("clMsg", mine && mine.status === "found" ? "Good news: we already have this package at our warehouse." : "Request sent. We'll let you know when the parcel arrives.", "ok");
+    if (notif) notif.refresh();
+  } catch (err) { msg("clMsg", netErr(err)); }
+  finally { $("clBtn").disabled = false; }
+};
+$("claims").addEventListener("click", async e => {
+  const w = e.target.closest("[data-withdraw]"), pkg = e.target.closest("[data-pkg]");
+  if (pkg) { e.preventDefault(); openPackage(pkg.dataset.pkg); }
+  if (w) {
+    if (!w.dataset.armed) { w.dataset.armed = "1"; w.textContent = "Tap again to withdraw"; return; }
+    try { claims = await rpc("consumer_withdraw_claim", { p_token: token, p_claim: w.dataset.withdraw }); renderClaims(); } catch (err) { msg("clMsg", netErr(err)); }
+  }
+});
+$("addrs").addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); tab(g.dataset.go); } });
 
 /* ---------- Notifications ---------- */
 let notif = null;
@@ -176,7 +244,7 @@ function initNotifications(){
     load: () => rpc("consumer_notifications", { p_token: token }),
     markRead: () => rpc("consumer_mark_notifications_read", { p_token: token }),
     list: $("nList"), badges: [$("bellBadge"), $("tabBadge")],
-    onOpen: tn => openPackage(tn)
+    onOpen: tn => (me.packages || []).some(x => x.tracking_no === tn) ? openPackage(tn) : tab("l")
   });
 }
 $("markAll").onclick = () => notif && notif.markAll();
@@ -191,12 +259,14 @@ function openPackage(tn){
 /* ---------- Render ---------- */
 function render(){
   const p = me.profile;
-  $("hName").textContent = p.full_name; $("hMeta").textContent = p.customer_no + " · " + p.phone; document.title = "My account · JustBuy";
+  $("hName").textContent = p.full_name; $("hMeta").textContent = p.customer_no + " · " + p.phone; $("hHello").textContent = "Hi " + p.full_name.split(" ")[0]; document.title = "My account · JustBuy";
   // addresses
   $("addrs").innerHTML = (me.addresses || []).map(a => {
     const all = a.lines.map(l => l.value).join("\n");
-    return `<article class="addr"><header><h3>${esc(a.label)}</h3><button class="btn sm tinted" type="button" data-copy="${esc(all)}">Copy all</button></header>
-      <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl></article>`;
+    const flag = window.JB ? JB.flag(a.id) : "", cjk = v => window.JB && JB.isCJK(v) ? ' class="cjk" lang="zh"' : "";
+    const note = a.id === "cn" ? `<p class="addr-note"><b>Give this address to your Chinese supplier exactly as written.</b> Then use <a href="#claim" data-go="l">Claim a package</a> with the tracking number your supplier sends you.</p>` : "";
+    return `<article class="addr"><header><h3>${flag}${esc(a.label)}</h3><button class="btn sm tinted" type="button" data-copy="${esc(all)}">Copy all</button></header>
+      <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd${cjk(l.value)}>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl>${note}</article>`;
   }).join("");
   $("aPhone").textContent = p.phone;
   // profile
@@ -204,7 +274,7 @@ function render(){
   $("pSince").textContent = new Date(p.created_at).toLocaleDateString("en-GB",{month:"short",year:"numeric"});
   $("pName").value = p.full_name || ""; $("pEmail").value = p.email || ""; $("pCity").value = p.city || ""; $("pShops").value = p.shops || "";
   // packages
-  const n = (me.packages || []).length; $("pkCount").textContent = n ? `(${n})` : "";
+  const n = (me.packages || []).length; $("pkCount").textContent = n ? String(n) : "";
   renderPackages();
 }
 $("addrs").addEventListener("click", async e => {
