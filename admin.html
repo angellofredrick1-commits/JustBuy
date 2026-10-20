@@ -25,7 +25,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-ui)}
 button,input,select,textarea{font:inherit;color:inherit}
-.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+.wrap{max-width:1320px;margin:0 auto;padding:20px 16px 48px}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 header.top h1{margin:0;font-size:22px;font-weight:800;color:var(--brand)}
 header.top .who{color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center}
@@ -107,6 +107,39 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .rtable td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
 .rtable td.ph{font-family:var(--font-num);white-space:nowrap}
 .rtable td.dt{color:var(--muted);white-space:nowrap}
+/* Left sidebar navigation */
+.ashell{display:grid;grid-template-columns:212px minmax(0,1fr);gap:20px;align-items:start}
+.anav{position:sticky;top:16px;display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+.anav button{display:flex;align-items:center;gap:10px;border:0;background:none;padding:10px 12px;border-radius:8px;font-weight:700;font-size:14px;color:var(--fg);cursor:pointer;text-align:left;white-space:nowrap}
+.anav button svg{color:var(--muted);flex:none}
+.anav button:hover{background:var(--soft)}
+.anav button[aria-selected="true"]{background:var(--brand-bg);color:var(--brand-dark)}
+.anav button[aria-selected="true"] svg{color:var(--brand)}
+.anav .nb{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--brand);color:var(--brand-fg);font-size:11px;line-height:20px;text-align:center}
+.amain{min-width:0}
+@media (max-width:860px){.ashell{grid-template-columns:1fr}.anav{position:static;flex-direction:row;overflow-x:auto}.anav button{flex:none}}
+/* Customer profile */
+.backbtn{border:0;background:none;color:var(--brand);font-weight:800;cursor:pointer;padding:0;margin-bottom:12px}
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+.subtabs button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;cursor:pointer;color:var(--fg)}
+.subtabs button[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-fg)}
+.subtabs .nb{display:inline-block;margin-left:6px;min-width:18px;padding:0 5px;border-radius:9px;background:var(--brand-bg);color:var(--brand-dark);font-size:11px}
+.subtabs button[aria-selected="true"] .nb{background:rgba(255,255,255,.25);color:#fff}
+.kv{display:grid;grid-template-columns:160px minmax(0,1fr);gap:8px 16px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.crow{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;margin-bottom:10px;background:var(--surface)}
+.crow .top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.crow .mono{font-family:var(--font-num);font-weight:600}
+.crow .meta{font-size:13px;color:var(--muted)}
+.crow .box{background:var(--ok-bg);border-radius:8px;padding:10px 12px;font-size:13px;display:flex;gap:18px;flex-wrap:wrap}
+.crow .box b{display:block;font-size:14px}
+.crow .warnline{font-size:13px;color:var(--warn);font-weight:700}
+.crow .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inline-form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:var(--soft);border-radius:8px;padding:10px}
+.inline-form label{flex:1 1 120px}
+.pill.c-req{background:var(--pill-bg);color:var(--pill-fg)} .pill.c-found{background:var(--ok-bg);color:var(--ok)}
+.pill.c-shipped{background:var(--brand-bg);color:var(--brand-dark)} .pill.c-rejected{background:var(--pill-bg);color:var(--muted)}
+.clickname{border:0;background:none;padding:0;color:var(--brand);font-weight:800;cursor:pointer;text-align:left;font-size:14px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
@@ -131,16 +164,46 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
   </div>
 
   <!-- APP -->
-  <div id="app" class="hidden">
-    <nav class="tabs" role="tablist">
-      <button class="tab on" id="tabShip" role="tab" aria-selected="true">Shipments</button>
-      <button class="tab" id="tabComp" role="tab" aria-selected="false">Companies</button>
-      <button class="tab" id="tabReg" role="tab" aria-selected="false">Registrations</button>
+  <div id="app" class="hidden ashell">
+    <nav class="anav" role="tablist" aria-label="Admin sections" aria-orientation="vertical">
+      <button id="tabShip" role="tab" aria-selected="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/><path d="M4 8.5 12 13l8-4.5M12 13v7"/></svg>Shipments</button>
+      <button id="tabReg" role="tab" aria-selected="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20c1-3.3 3.5-5 6.5-5s5.5 1.7 6.5 5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .6 3.2 2.3 3.5 5"/></svg>Customers<span class="nb hidden" id="claimsWaiting" title="Claims waiting for a parcel"></span></button>
+      <button id="tabIntake" role="tab" aria-selected="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M8 20v-6h8v6M8 17h8"/></svg>Warehouse intake</button>
+      <button id="tabComp" role="tab" aria-selected="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="11" height="18" rx="1.5"/><path d="M15 9h4.5a.5.5 0 0 1 .5.5V21M8 7h3M8 11h3M8 15h3"/></svg>Companies</button>
     </nav>
+    <div class="amain">
+
+    <div class="layout hidden" id="intakeView">
+      <div class="card">
+        <h3>Record a parcel arrival</h3>
+        <form id="inForm">
+          <div class="grid g2">
+            <label>Warehouse<select id="in_wh"><option value="cn">China (Guangzhou)</option><option value="us">United States</option><option value="uk">United Kingdom</option></select></label>
+            <label>Received<input id="in_at" type="datetime-local" required></label>
+          </div>
+          <label style="margin-top:12px">Supplier tracking number<input id="in_trk" required autocomplete="off" placeholder="e.g. YT1234567890CN"></label>
+          <label style="margin-top:12px">What's inside <span class="opt">optional</span><input id="in_desc" placeholder="e.g. 3 phone cases"></label>
+          <div class="grid g2" style="margin-top:12px">
+            <label>Pieces <span class="opt">optional</span><input id="in_pcs" type="number" min="0" step="1"></label>
+            <label>Weight (kg) <span class="opt">optional</span><input id="in_kg" type="number" min="0" step="0.01"></label>
+          </div>
+          <label style="margin-top:12px">Notes <span class="opt">internal</span><input id="in_notes"></label>
+          <div class="row-end"><button class="btn primary" id="in_save" type="submit">Save arrival</button></div>
+          <div id="in_msg"></div>
+        </form>
+        <p style="font-size:13px;color:var(--muted);margin:12px 0 0">If a customer has claimed this tracking number, it's matched to them straight away and they see <b>Package found</b>.</p>
+      </div>
+      <div class="card">
+        <div class="toolbar"><input id="inSearch" type="search" placeholder="Search tracking number or contents"><select id="inFilter"><option value="">All parcels</option><option value="un">Unclaimed</option><option value="cl">Claimed</option></select></div>
+        <div id="inList"></div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="custView"></div>
 
     <div class="card hidden" id="regView">
-      <div class="toolbar"><input id="rSearch" type="search" placeholder="Search name, phone, email or city"><span id="rCount" style="align-self:center;color:var(--muted);font-size:13px"></span></div>
-      <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Customer</th><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Packages</th><th>Registered</th><th></th></tr></thead><tbody id="rBody"></tbody></table></div>
+      <div class="toolbar"><input id="rSearch" type="search" placeholder="Search customer number, name, phone, email or city"><span id="rCount" style="align-self:center;color:var(--muted);font-size:13px"></span></div>
+      <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Customer</th><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Packages</th><th>Claims</th><th>Registered</th><th></th></tr></thead><tbody id="rBody"></tbody></table></div>
     </div>
 
     <div class="layout hidden" id="compView">
@@ -165,6 +228,7 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
       <div class="card" id="detail">
         <div class="empty">Select a shipment, or create a new one.</div>
       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -270,7 +334,7 @@ async function route(session){
     await sb.auth.signOut(); return;
   }
   $("whoEmail").textContent = session.user.email;
-  show("app"); await loadCompanies(); loadList();
+  show("app"); await loadCompanies(); loadList(); loadClaimsWaiting();
 }
 function show(which){
   $("login").classList.toggle("hidden", which!=="login");
@@ -461,32 +525,38 @@ async function openShipment(id){
 
 /* ---------- Tabs ---------- */
 function setTab(t){
-  [["tabShip","shipView","ship"],["tabComp","compView","comp"],["tabReg","regView","reg"]].forEach(([b,v,k]) => {
+  [["tabShip","shipView","ship"],["tabComp","compView","comp"],["tabReg","regView","reg"],["tabIntake","intakeView","intake"]].forEach(([b,v,k]) => {
     $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
   });
+  $("custView").classList.add("hidden");
 }
+$("tabIntake").onclick = () => { setTab("intake"); loadIntake(); };
 $("tabReg").onclick = () => { setTab("reg"); loadRegs(); };
 
 /* ---------- Registrations (from the landing page) ---------- */
 let regs = [];
 async function loadRegs(){
-  $("rBody").innerHTML = `<tr><td colspan="8" class="dt">Loading…</td></tr>`;
-  const { data, error } = await sb.from("registrations").select("id,customer_no,full_name,phone,email,city,shops,created_at,locked_until,shipments(count)").order("created_at",{ascending:false}).limit(2000);
-  if (error) { $("rBody").innerHTML = `<tr><td colspan="8"><div class="msg err">${esc(error.message)}</div></td></tr>`; return; }
+  $("rBody").innerHTML = `<tr><td colspan="9" class="dt">Loading…</td></tr>`;
+  const { data, error } = await sb.from("registrations").select("id,customer_no,full_name,phone,email,city,shops,created_at,locked_until,shipments(count),package_claims(status)").order("created_at",{ascending:false}).limit(2000);
+  if (error) { $("rBody").innerHTML = `<tr><td colspan="9"><div class="msg err">${esc(error.message)}</div></td></tr>`; return; }
   regs = data; renderRegs();
 }
 function renderRegs(){
   const q = $("rSearch").value.trim().toLowerCase();
   const rows = regs.filter(r => !q || [r.customer_no,r.full_name,r.phone,r.email,r.city,r.shops].some(v => (v||"").toLowerCase().includes(q)));
   $("rCount").textContent = `${rows.length} of ${regs.length} registration${regs.length===1?"":"s"}`;
-  $("rBody").innerHTML = rows.length ? rows.map(r => { const n = r.shipments?.[0]?.count ?? 0; return `<tr>
-      <td class="ph">${esc(r.customer_no)}</td><td>${esc(r.full_name)}${r.shops?`<div class="dt" style="font-size:12px">${esc(r.shops)}</div>`:""}</td>
-      <td class="ph">${esc(r.phone)}</td><td>${esc(r.email||"")}</td><td>${esc(r.city||"")}</td><td>${n}</td><td class="dt">${fmtDT(r.created_at)}</td>
-      <td style="white-space:nowrap"><button class="btn small primary" data-newpkg="${esc(r.phone)}">+ Package</button> <button class="btn small" data-pkgs="${esc(r.customer_no)}">Packages</button> <button class="btn small" data-reset="${r.id}">Reset PIN</button></td></tr>`; }).join("")
-    : `<tr><td colspan="8" class="dt">${regs.length ? "No registrations match." : "No registrations yet. They'll appear here when people sign up on the home page."}</td></tr>`;
+  $("rBody").innerHTML = rows.length ? rows.map(r => { const n = r.shipments?.[0]?.count ?? 0;
+      const cl = r.package_claims || [], waiting = cl.filter(c => c.status === "requested").length, found = cl.filter(c => c.status === "found").length;
+      const claimTxt = cl.length ? `${cl.length}${waiting ? ` · <span style="color:var(--warn)">${waiting} waiting</span>` : ""}${found ? ` · <span style="color:var(--ok)">${found} found</span>` : ""}` : "–";
+      return `<tr>
+      <td class="ph">${esc(r.customer_no)}</td><td><button class="clickname" data-open="${r.id}">${esc(r.full_name)}</button>${r.shops?`<div class="dt" style="font-size:12px">${esc(r.shops)}</div>`:""}</td>
+      <td class="ph">${esc(r.phone)}</td><td>${esc(r.email||"")}</td><td>${esc(r.city||"")}</td><td>${n}</td><td style="white-space:nowrap">${claimTxt}</td><td class="dt">${fmtDT(r.created_at)}</td>
+      <td style="white-space:nowrap"><button class="btn small primary" data-open="${r.id}">Open profile</button> <button class="btn small" data-newpkg="${esc(r.phone)}">+ Package</button></td></tr>`; }).join("")
+    : `<tr><td colspan="9" class="dt">${regs.length ? "No customers match." : "No customers yet. They'll appear here when people sign up on the home page."}</td></tr>`;
 }
 $("rSearch").oninput = renderRegs;
 $("rBody").addEventListener("click", async e => {
+  const op = e.target.closest("[data-open]"); if (op) { openCustomer(op.dataset.open); return; }
   const nb = e.target.closest("[data-newpkg]"), pk = e.target.closest("[data-pkgs]"), rs = e.target.closest("[data-reset]");
   if (nb) { setTab("ship"); selectedId = null; renderList(); renderForm(null); renderForm.prefillPhone(nb.dataset.newpkg); }
   if (pk) { setTab("ship"); $("search").value = pk.dataset.pkgs; renderList(); }
@@ -601,6 +671,200 @@ async function copyText(text, btn, box){
   catch { const r = document.createRange(); r.selectNodeContents(box); getSelection().removeAllRanges(); getSelection().addRange(r); btn.textContent = "Selected, press Ctrl+C"; }
   setTimeout(() => btn.textContent = btn.id==="cCopyCode" ? "Copy code" : "Copy message", 2500);
 }
+
+/* ---------- Warehouse intake ---------- */
+const WH = { cn: "Guangzhou, China", us: "Sarasota, US", uk: "West Drayton, UK" };
+const WH_LABEL = { cn: "China", us: "United States", uk: "United Kingdom" };
+const nowLocal = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,16); };
+let intake = [];
+async function loadIntake(){
+  if (!$("in_at").value) $("in_at").value = nowLocal();
+  $("inList").innerHTML = `<div class="empty">Loading…</div>`;
+  const { data, error } = await sb.from("warehouse_intake")
+    .select("*, package_claims(id,status,registration_id,registrations(full_name,customer_no))")
+    .order("received_at", { ascending: false }).limit(1000);
+  if (error) { $("inList").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+  intake = data; renderIntake();
+}
+function renderIntake(){
+  const q = $("inSearch").value.trim().toLowerCase(), f = $("inFilter").value;
+  const owner = w => (w.package_claims || []).find(c => c.status !== "rejected");
+  const rows = intake.filter(w => (!q || [w.supplier_tracking, w.description].some(v => (v||"").toLowerCase().includes(q)))
+    && (!f || (f === "un" ? !owner(w) : !!owner(w))));
+  if (!rows.length) { $("inList").innerHTML = `<div class="empty">${intake.length ? "No parcels match." : "No parcels recorded yet. Record arrivals on the left."}</div>`; return; }
+  $("inList").innerHTML = rows.map(w => { const c = owner(w); return `<div class="crow">
+      <div class="top"><span class="mono">${esc(w.supplier_tracking)}</span>
+        ${c ? `<span class="pill c-found">Claimed · ${esc(c.registrations?.full_name || "")} ${esc(c.registrations?.customer_no || "")}</span>` : `<span class="pill c-req">Unclaimed</span>`}</div>
+      <div class="meta">${esc(WH_LABEL[w.warehouse] || w.warehouse)} · received ${fmtDT(w.received_at)}${w.description ? " · " + esc(w.description) : ""}${w.pieces != null ? " · " + w.pieces + " pcs" : ""}${w.weight_kg != null ? " · " + w.weight_kg + " kg" : ""}${w.notes ? " · " + esc(w.notes) : ""}</div>
+      <div class="acts">${c ? `<button class="btn small" data-cust="${c.registration_id}">Open customer</button>` : `<button class="btn small" data-assign="${w.id}">Assign to a customer</button>`}</div>
+      <div data-assign-box="${w.id}"></div>
+    </div>`; }).join("");
+}
+$("inSearch").oninput = renderIntake; $("inFilter").onchange = renderIntake;
+$("inForm").onsubmit = async e => {
+  e.preventDefault();
+  const trk = $("in_trk").value.trim();
+  if (trk.replace(/[^A-Za-z0-9]/g,"").length < 4) { msg("in_msg","Enter the supplier tracking number."); return; }
+  $("in_save").disabled = true; msg("in_msg","");
+  const row = { warehouse: $("in_wh").value, supplier_tracking: trk, description: $("in_desc").value.trim() || null,
+    pieces: $("in_pcs").value ? parseInt($("in_pcs").value,10) : null, weight_kg: $("in_kg").value ? parseFloat($("in_kg").value) : null,
+    received_at: new Date($("in_at").value).toISOString(), notes: $("in_notes").value.trim() || null };
+  const { data, error } = await sb.from("warehouse_intake").insert(row).select("id").single();
+  $("in_save").disabled = false;
+  if (error) { msg("in_msg", error.code === "23505" ? "This tracking number is already recorded." : error.message); return; }
+  const { data: m } = await sb.from("package_claims").select("registrations(full_name,customer_no)").eq("intake_id", data.id).neq("status","rejected").maybeSingle();
+  msg("in_msg", m ? `Saved and matched to ${m.registrations.full_name} (${m.registrations.customer_no}). They now see Package found.` : "Saved. Nobody has claimed this tracking number yet.", "ok");
+  ["in_trk","in_desc","in_pcs","in_kg","in_notes"].forEach(id => $(id).value = ""); $("in_at").value = nowLocal();
+  loadIntake(); loadClaimsWaiting();
+};
+$("inList").addEventListener("click", async e => {
+  const cu = e.target.closest("[data-cust]"); if (cu) { openCustomer(cu.dataset.cust); return; }
+  const as = e.target.closest("[data-assign]");
+  if (as) {
+    const box = document.querySelector(`[data-assign-box="${as.dataset.assign}"]`);
+    box.innerHTML = `<div class="inline-form"><label>Customer phone number<input type="tel" data-ph placeholder="0712 345 678"></label><button class="btn small primary" data-assign-go="${as.dataset.assign}">Assign</button><span class="match" data-ph-msg></span></div>`;
+    box.querySelector("[data-ph]").focus();
+  }
+  const go = e.target.closest("[data-assign-go]");
+  if (go) {
+    const box = go.closest("[data-assign-box]"), digits = box.querySelector("[data-ph]").value.replace(/\D/g,""), out = box.querySelector("[data-ph-msg]");
+    if (digits.length < 9) { out.className = "match bad"; out.textContent = "Enter the customer's phone number."; return; }
+    const { data: r } = await sb.from("registrations").select("id,full_name,customer_no").eq("phone_key", digits.slice(-9)).maybeSingle();
+    if (!r) { out.className = "match bad"; out.textContent = "No registered customer with this number."; return; }
+    const w = intake.find(x => x.id === go.dataset.assignGo);
+    const { error } = await sb.from("package_claims").insert({ registration_id: r.id, supplier_tracking: w.supplier_tracking, description: w.description, admin_note: "Assigned by JustBuy" });
+    if (error) { out.className = "match bad"; out.textContent = error.code === "23505" ? "This customer already claimed it." : error.message; return; }
+    out.className = "match ok"; out.textContent = `✓ Assigned to ${r.full_name} (${r.customer_no})`;
+    setTimeout(loadIntake, 800);
+  }
+});
+
+/* ---------- Claims waiting badge ---------- */
+async function loadClaimsWaiting(){
+  const { count } = await sb.from("package_claims").select("id", { count: "exact", head: true }).eq("status", "requested");
+  const b = $("claimsWaiting"); b.textContent = count || ""; b.classList.toggle("hidden", !count);
+}
+
+/* ---------- Customer profile ---------- */
+let cust = null, custTab = "claims";
+const CLAIM_LBL = { requested: ["c-req","Request sent"], found: ["c-found","Package found"], shipped: ["c-shipped","Package created"], rejected: ["c-rejected","Closed"] };
+async function openCustomer(id, tabName){
+  ["shipView","compView","regView","intakeView"].forEach(v => $(v).classList.add("hidden"));
+  ["tabShip","tabComp","tabIntake"].forEach(b => $(b).setAttribute("aria-selected", false));
+  $("tabReg").setAttribute("aria-selected", true);
+  if (tabName) custTab = tabName;
+  $("custView").classList.remove("hidden");
+  $("custView").innerHTML = `<div class="empty">Loading customer…</div>`;
+  const [{ data: r, error }, { data: ships }, { data: cl }] = await Promise.all([
+    sb.from("registrations").select("id,customer_no,full_name,phone,email,city,shops,created_at,locked_until,notif_seen_at").eq("id", id).single(),
+    sb.from("shipments").select("id,tracking_no,description,status,updated_at").eq("registration_id", id).order("updated_at",{ascending:false}),
+    sb.from("package_claims").select("*, warehouse_intake(*), shipments(id,tracking_no,status)").eq("registration_id", id).order("created_at",{ascending:false})
+  ]);
+  if (error) { $("custView").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+  // Is any of these tracking numbers also claimed by someone else?
+  const keys = [...new Set((cl||[]).map(c => c.tracking_key))];
+  let others = [];
+  if (keys.length) { const { data: o } = await sb.from("package_claims").select("tracking_key,status,registrations(full_name,customer_no)").in("tracking_key", keys).neq("registration_id", id).neq("status","rejected"); others = o || []; }
+  cust = { r, ships: ships || [], claims: cl || [], others };
+  renderCustomer();
+}
+function renderCustomer(){
+  const { r, ships, claims } = cust;
+  const waiting = claims.filter(c => c.status === "requested").length, found = claims.filter(c => c.status === "found").length;
+  const T = (k, label, n) => `<button type="button" data-ctab="${k}" aria-selected="${custTab===k}">${label}${n ? `<span class="nb">${n}</span>` : ""}</button>`;
+  $("custView").innerHTML = `
+    <button class="backbtn" data-back>← All customers</button>
+    <div class="detail-head" style="margin-bottom:0">
+      <div><h2>${esc(r.full_name)}</h2><div class="tn">${esc(r.customer_no)} · ${esc(r.phone)}</div></div>
+      <div class="actions"><button class="btn small primary" data-newpkg-c>+ Package</button><button class="btn small" data-reset-c>Reset PIN</button></div>
+    </div>
+    <div class="subtabs" role="tablist">${T("profile","Profile")}${T("packages","Packages", ships.length)}${T("claims","Claimed packages", waiting + found)}</div>
+    <div id="custBody"></div>`;
+  const body = $("custBody");
+  if (custTab === "profile") {
+    body.innerHTML = `<dl class="kv">
+      <dt>Customer number</dt><dd>${esc(r.customer_no)}</dd><dt>Phone (their ID)</dt><dd>${esc(r.phone)}</dd>
+      <dt>Email</dt><dd>${esc(r.email || "–")}</dd><dt>City</dt><dd>${esc(r.city || "–")}</dd><dt>Shops</dt><dd>${esc(r.shops || "–")}</dd>
+      <dt>Registered</dt><dd>${fmtDT(r.created_at)}</dd>${r.locked_until && new Date(r.locked_until) > new Date() ? `<dt>Sign-in</dt><dd style="color:var(--warn)">Paused after wrong PINs until ${fmtDT(r.locked_until)}</dd>` : ""}</dl>`;
+  } else if (custTab === "packages") {
+    body.innerHTML = ships.length ? ships.map(sh => `<div class="crow"><div class="top"><span class="mono">${esc(sh.tracking_no)}</span><span class="pill ${pillClass(sh.status)}">${esc(sh.status)}</span></div>
+      <div class="meta">${esc(sh.description || "")} · updated ${fmtDT(sh.updated_at)}</div><div class="acts"><button class="btn small" data-openship="${sh.id}">Open in Shipments</button></div></div>`).join("")
+      : `<div class="empty">No packages for this customer yet.</div>`;
+  } else {
+    body.innerHTML = claims.length ? claims.map(claimRow).join("") : `<div class="empty">This customer hasn't claimed any packages yet.</div>`;
+  }
+}
+function claimRow(c){
+  const [cls, label] = CLAIM_LBL[c.status] || ["c-req", c.status];
+  const w = c.warehouse_intake, dup = cust.others.filter(o => o.tracking_key === c.tracking_key);
+  const box = w ? `<div class="box"><span><b>${esc(WH_LABEL[w.warehouse] || w.warehouse)} warehouse</b>received ${fmtDT(w.received_at)}</span>${w.description ? `<span><b>${esc(w.description)}</b>contents</span>` : ""}${w.pieces != null ? `<span><b>${w.pieces}</b>pieces</span>` : ""}${w.weight_kg != null ? `<span><b>${w.weight_kg} kg</b>weight</span>` : ""}</div>` : "";
+  let acts = "";
+  if (c.status === "requested") acts = `<button class="btn small primary" data-arrive="${c.id}">Record arrival</button><button class="btn small" data-close="${c.id}">Close claim</button>`;
+  if (c.status === "found") acts = `<button class="btn small primary" data-make="${c.id}">Create JustBuy package</button><button class="btn small" data-close="${c.id}">Close claim</button>`;
+  if (c.status === "shipped" && c.shipments) acts = `<button class="btn small" data-openship="${c.shipments.id}">Open ${esc(c.shipments.tracking_no)}</button>`;
+  if (c.status === "rejected") acts = `<button class="btn small" data-reopen="${c.id}">Reopen</button>`;
+  return `<div class="crow" data-claim="${c.id}">
+    <div class="top"><span><span class="mono">${esc(c.supplier_tracking)}</span>${c.description ? ` <span class="meta">· ${esc(c.description)}</span>` : ""}</span><span class="pill ${cls}">${label}</span></div>
+    <div class="meta">Claimed ${fmtDT(c.created_at)}${c.found_at ? " · found " + fmtDT(c.found_at) : ""}${c.admin_note ? " · " + esc(c.admin_note) : ""}</div>
+    ${box}
+    ${dup.length ? `<div class="warnline">Also claimed by ${dup.map(o => esc(o.registrations?.full_name || "") + " (" + esc(o.registrations?.customer_no || "") + ")").join(", ")}. Check who it belongs to.</div>` : ""}
+    <div class="acts">${acts}</div><div data-slot></div>
+  </div>`;
+}
+$("custView").addEventListener("click", async e => {
+  const t = e.target;
+  if (t.closest("[data-back]")) { setTab("reg"); loadRegs(); return; }
+  const ct = t.closest("[data-ctab]"); if (ct) { custTab = ct.dataset.ctab; renderCustomer(); return; }
+  if (t.closest("[data-newpkg-c]")) { setTab("ship"); selectedId = null; renderList(); renderForm(null); renderForm.prefillPhone(cust.r.phone); return; }
+  const rs = t.closest("[data-reset-c]");
+  if (rs) { if (!rs.dataset.armed) { rs.dataset.armed = "1"; rs.textContent = "Click again to reset"; return; }
+    const { error } = await sb.rpc("admin_reset_pin", { p_reg: cust.r.id }); rs.textContent = error ? "Couldn't reset" : "PIN reset ✓"; delete rs.dataset.armed; return; }
+  const os = t.closest("[data-openship]"); if (os) { setTab("ship"); openShipment(os.dataset.openship); return; }
+  const claimEl = t.closest("[data-claim]"); if (!claimEl) return;
+  const c = cust.claims.find(x => x.id === claimEl.dataset.claim), slot = claimEl.querySelector("[data-slot]");
+  if (t.closest("[data-arrive]")) {
+    slot.innerHTML = `<div class="inline-form">
+      <label>Warehouse<select data-f="wh"><option value="cn">China</option><option value="us">United States</option><option value="uk">United Kingdom</option></select></label>
+      <label>What's inside<input data-f="desc" value="${esc(c.description || "")}"></label>
+      <label>Pieces<input data-f="pcs" type="number" min="0" step="1"></label>
+      <label>Weight (kg)<input data-f="kg" type="number" min="0" step="0.01"></label>
+      <button class="btn small primary" data-arrive-go>Save arrival</button><span class="match" data-out></span></div>`;
+    return;
+  }
+  if (t.closest("[data-arrive-go]")) {
+    const f = k => slot.querySelector(`[data-f="${k}"]`).value.trim();
+    const { error } = await sb.from("warehouse_intake").insert({ warehouse: f("wh"), supplier_tracking: c.supplier_tracking, description: f("desc") || null,
+      pieces: f("pcs") ? parseInt(f("pcs"),10) : null, weight_kg: f("kg") ? parseFloat(f("kg")) : null });
+    if (error) { const o = slot.querySelector("[data-out]"); o.className = "match bad"; o.textContent = error.code === "23505" ? "This parcel is already recorded. See Warehouse intake for who it's matched to." : error.message; return; }
+    loadClaimsWaiting(); openCustomer(cust.r.id, "claims"); return;
+  }
+  if (t.closest("[data-close]")) {
+    slot.innerHTML = `<div class="inline-form"><label>Reason the customer will see<input data-f="note" placeholder="e.g. Not received at our warehouse after 30 days"></label><button class="btn small primary" data-close-go>Close claim</button></div>`;
+    slot.querySelector("input").focus(); return;
+  }
+  if (t.closest("[data-close-go]")) {
+    const note = slot.querySelector('[data-f="note"]').value.trim() || "Closed by JustBuy";
+    await sb.from("package_claims").update({ status: "rejected", admin_note: note }).eq("id", c.id);
+    loadClaimsWaiting(); openCustomer(cust.r.id, "claims"); return;
+  }
+  if (t.closest("[data-reopen]")) {
+    await sb.from("package_claims").update({ status: "requested", intake_id: null, admin_note: null, found_at: null }).eq("id", c.id);
+    loadClaimsWaiting(); openCustomer(cust.r.id, "claims"); return;
+  }
+  const mk = t.closest("[data-make]");
+  if (mk) {
+    mk.disabled = true; mk.textContent = "Creating…";
+    const w = c.warehouse_intake, origin = WH[w.warehouse] || "China";
+    const { data: sh, error } = await sb.from("shipments").insert({
+      tracking_no: newTrackingNo(), registration_id: cust.r.id, description: w.description || c.description || null,
+      pieces: w.pieces, weight_kg: w.weight_kg, origin, destination: "Dar es Salaam",
+      internal_note: `Supplier tracking ${c.supplier_tracking}` }).select("id,tracking_no").single();
+    if (error) { mk.disabled = false; mk.textContent = "Create JustBuy package"; slot.innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+    await sb.from("shipment_events").insert({ shipment_id: sh.id, status: "At origin warehouse", location: origin, note: `Received at our warehouse (supplier tracking ${c.supplier_tracking})`, happened_at: w.received_at });
+    await sb.from("package_claims").update({ status: "shipped", shipment_id: sh.id }).eq("id", c.id);
+    loadList(); openCustomer(cust.r.id, "claims");
+  }
+});
 </script>
 </body>
 </html>
