@@ -50,7 +50,14 @@
     </section>
 
     <section id="viewP" class="view hidden" role="tabpanel">
-      <div class="stats" id="stats"></div>
+      <div class="paybar">
+        <div class="seg" role="tablist" aria-label="Filter by payment" id="payBar">
+          <button type="button" role="tab" aria-selected="true" data-pay="all">All <span class="segn" id="nAll"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-pay="paid">Paid <span class="segn" id="nPaid"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-pay="unpaid">Unpaid <span class="segn" id="nUnpaid"></span></button>
+        </div>
+      </div>
+      <div class="stats money" id="stats"></div>
       <div class="toolbar">
         <input id="q" type="search" placeholder="Search tracking number or contents" aria-label="Search packages">
         <span class="fresh" id="fresh"></span>
@@ -61,10 +68,17 @@
     <section id="viewL" class="view hidden" role="tabpanel">
       <div class="card">
         <p class="body-sm" style="margin:0 0 16px;color:var(--muted)">Ordered from a supplier in China? Enter the tracking number your supplier gave you. When the parcel reaches our China warehouse, we match it to you automatically and it shows here as <b style="color:var(--ok)">Package found</b>.</p>
-        <form class="claim-form" id="claimForm" novalidate>
-          <label class="field"><span>Supplier tracking number</span><input id="clTrk" class="code" autocomplete="off" spellcheck="false" placeholder="e.g. YT1234567890CN" maxlength="60"></label>
-          <label class="field"><span>What is it? <span class="opt">optional</span></span><input id="clDesc" maxlength="200" placeholder="e.g. 3 phone cases"></label>
-          <button class="btn" id="clBtn" type="submit" style="min-height:48px">Send request</button>
+        <form id="claimForm" novalidate>
+          <div class="claim-form" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">
+            <label class="field"><span>Supplier tracking number</span><input id="clTrk" class="code" autocomplete="off" spellcheck="false" placeholder="e.g. YT1234567890CN" maxlength="60"></label>
+            <label class="field"><span>What is it? <span class="opt">optional</span></span><input id="clDesc" maxlength="200" placeholder="e.g. 3 phone cases"></label>
+          </div>
+          <fieldset class="methods" id="methodsBox">
+            <legend>How should we ship it to Tanzania?</legend>
+            <div class="mgrid" id="mgrid"><div class="caption">Loading shipping options…</div></div>
+            <p class="caption" id="surchargeNote" style="margin:10px 2px 0"></p>
+          </fieldset>
+          <button class="btn lg" id="clBtn" type="submit" style="margin-top:16px">Send request</button>
         </form>
         <div id="clMsg" role="status" aria-live="polite" style="margin-top:12px"></div>
       </div>
@@ -180,10 +194,47 @@ function tab(t){
     $(b).classList.toggle("on", t===k); $(b).setAttribute("aria-selected", t===k); $(v).classList.toggle("hidden", t!==k);
     if (t===k) { history.replaceState(null, "", "#"+h); $("secTitle").textContent = title; if (innerWidth <= 860) $(b).scrollIntoView({ block: "nearest", inline: "center" }); }
   });
-  if (t === "l") loadClaims();
+  if (t === "l") { loadClaims(); loadMethods(); }
 }
 $("tabA").onclick = () => tab("a"); $("tabP").onclick = () => tab("p"); $("tabL").onclick = () => tab("l"); $("tabN").onclick = () => tab("n"); $("tabR").onclick = () => tab("r");
 $("bell").onclick = () => { tab("n"); $("viewN").scrollIntoView({ block: "start", behavior: "smooth" }); };
+
+/* ---------- Shipping methods (China) ---------- */
+let methods = [], surcharge = null;
+const usd = n => "USD " + Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+function rateText(m){
+  const t = m.tiers || [];
+  if (t.length === 1) return `${usd(t[0].usd_per_kg)}/kg`;
+  return `${usd(t[0].usd_per_kg)}/kg up to ${t[0].max_kg} kg`;
+}
+function tierList(m){
+  const t = m.tiers || []; if (t.length < 2) return "";
+  return `<ul class="tiers">${t.map(x => `<li><span>${x.min_kg}${x.max_kg ? "–" + x.max_kg : "+"} kg</span><b>${usd(x.usd_per_kg)}/kg</b></li>`).join("")}</ul>`;
+}
+async function loadMethods(){
+  if (methods.length) return;
+  try {
+    const h = { apikey: SB_KEY };
+    const [m, st] = await Promise.all([
+      fetch(`${SB_URL}/rest/v1/shipping_methods?select=*&active=eq.true&order=sort`, { headers: h }).then(r => r.json()),
+      fetch(`${SB_URL}/rest/v1/shipping_settings?select=value&key=eq.cn_high_value_surcharge_usd_per_item`, { headers: h }).then(r => r.json())
+    ]);
+    methods = Array.isArray(m) ? m : []; surcharge = st && st[0] ? Number(st[0].value) : null;
+  } catch { methods = []; }
+  renderMethods(); if (claims) renderClaims();
+}
+function renderMethods(){
+  if (!methods.length) { $("mgrid").innerHTML = `<p class="note-err">We couldn't load the shipping options. Refresh the page to try again.</p>`; return; }
+  $("mgrid").innerHTML = methods.map((m, i) => `<label class="mcard">
+      <input type="radio" name="method" value="${esc(m.id)}">
+      <span class="mtop"><b>${esc(m.name)}</b><span class="mrate">${rateText(m)}</span></span>
+      <span class="mmeta">${esc(m.cargo)}</span>
+      <span class="mmeta">⏱ ${esc(m.eta)}</span>
+      <span class="mmeta">Dispatch: ${esc(m.dispatch_days)}</span>
+      ${tierList(m)}
+    </label>`).join("");
+  $("surchargeNote").innerHTML = surcharge ? `<b>High-value items:</b> a ${usd(surcharge)} surcharge per item applies to mobile phones, laptops, cameras and other high-value goods.` : "";
+}
 
 /* ---------- Claim a package ---------- */
 let claims = null;
@@ -209,16 +260,22 @@ function renderClaims(){
     const ship = c.jb_tracking ? `<p class="sub" style="margin:0">Now shipping as <a href="#packages" data-pkg="${esc(c.jb_tracking)}" class="mono">${esc(c.jb_tracking)}</a>. Follow it in My packages.</p>` : "";
     const waiting = c.status === "requested" ? `<p class="sub" style="margin:0">Sent ${fmtShort(c.created_at)}. We'll match it as soon as the parcel arrives at our warehouse. <button class="btn plain" style="font-size:14px" data-withdraw="${c.id}">Withdraw</button></p>` : "";
     const note = c.admin_note && c.status === "rejected" ? `<p class="sub" style="margin:0">${esc(c.admin_note)}</p>` : "";
-    return `<article class="claim"><div class="top"><span><span class="mono">${esc(c.supplier_tracking)}</span>${c.description ? ` <span class="sub">· ${esc(c.description)}</span>` : ""}</span><span class="pill ${cls}">${label}</span></div>${found}${ship}${waiting}${note}</article>`;
+    const canChange = (c.status === "requested" || c.status === "found") && methods.length;
+    const meth = canChange
+      ? `<label class="sub mline">Shipping method <select data-method="${c.id}">${c.shipping_method ? "" : `<option value="">Choose…</option>`}${methods.map(m => `<option value="${esc(m.id)}" ${m.id === c.shipping_method ? "selected" : ""}>${esc(m.name)} · ${rateText(m)}</option>`).join("")}</select></label>`
+      : c.shipping_method_name ? `<p class="sub" style="margin:0">Shipping method: <b style="color:var(--fg)">${esc(c.shipping_method_name)}</b></p>` : "";
+    return `<article class="claim"><div class="top"><span><span class="mono">${esc(c.supplier_tracking)}</span>${c.description ? ` <span class="sub">· ${esc(c.description)}</span>` : ""}</span><span class="pill ${cls}">${label}</span></div>${found}${meth}${ship}${waiting}${note}</article>`;
   }).join("");
 }
 $("claimForm").onsubmit = async e => {
   e.preventDefault();
   const t = $("clTrk").value.trim();
   if (t.replace(/[^A-Za-z0-9]/g, "").length < 4) { msg("clMsg", "Enter the tracking number your supplier gave you."); $("clTrk").focus(); return; }
+  const method = (document.querySelector('#mgrid input[name="method"]:checked') || {}).value;
+  if (!method) { msg("clMsg", "Choose how you want this package shipped."); $("methodsBox").scrollIntoView({ block: "center", behavior: "smooth" }); return; }
   $("clBtn").disabled = true; msg("clMsg", "");
   try {
-    claims = await rpc("consumer_submit_claim", { p_token: token, p_tracking: t, p_description: $("clDesc").value.trim() || null });
+    claims = await rpc("consumer_submit_claim", { p_token: token, p_tracking: t, p_description: $("clDesc").value.trim() || null, p_method: method });
     const mine = claims.find(c => c.supplier_tracking === t);
     $("claimForm").reset(); renderClaims();
     msg("clMsg", mine && mine.status === "found" ? "Good news: we already have this package at our warehouse." : "Request sent. We'll let you know when the parcel arrives.", "ok");
@@ -226,6 +283,12 @@ $("claimForm").onsubmit = async e => {
   } catch (err) { msg("clMsg", netErr(err)); }
   finally { $("clBtn").disabled = false; }
 };
+$("claims").addEventListener("change", async e => {
+  const sel = e.target.closest("[data-method]"); if (!sel || !sel.value) return;
+  sel.disabled = true;
+  try { claims = await rpc("consumer_set_claim_method", { p_token: token, p_claim: sel.dataset.method, p_method: sel.value }); renderClaims(); msg("clMsg", "Shipping method updated.", "ok"); }
+  catch (err) { msg("clMsg", netErr(err)); sel.disabled = false; }
+});
 $("claims").addEventListener("click", async e => {
   const w = e.target.closest("[data-withdraw]"), pkg = e.target.closest("[data-pkg]");
   if (pkg) { e.preventDefault(); openPackage(pkg.dataset.pkg); }
@@ -249,7 +312,7 @@ function initNotifications(){
 }
 $("markAll").onclick = () => notif && notif.markAll();
 function openPackage(tn){
-  filter = "all"; $("q").value = ""; tab("p"); renderPackages();
+  payFilter = "all"; $("q").value = ""; tab("p"); renderPackages();
   const el = [...document.querySelectorAll("#ships details.ship")].find(d => d.dataset.tn === tn);
   if (!el) return;
   el.open = true; el.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -264,7 +327,7 @@ function render(){
   $("addrs").innerHTML = (me.addresses || []).map(a => {
     const all = a.lines.map(l => l.value).join("\n");
     const flag = window.JB ? JB.flag(a.id) : "", cjk = v => window.JB && JB.isCJK(v) ? ' class="cjk" lang="zh"' : "";
-    const note = a.id === "cn" ? `<p class="addr-note"><b>Give this address to your Chinese supplier exactly as written.</b> Then use <a href="#claim" data-go="l">Claim a package</a> with the tracking number your supplier sends you.</p>` : "";
+    const note = a.id === "cn" ? `<p class="addr-note"><b>Give this address to your Chinese supplier exactly as written.</b> Then use <a href="#claim" data-go="l">Claim a package</a> with the tracking number your supplier sends you, and choose how you want it shipped.</p>` : "";
     return `<article class="addr"><header><h3>${flag}${esc(a.label)}</h3><button class="btn sm tinted" type="button" data-copy="${esc(all)}">Copy all</button></header>
       <dl>${a.lines.map(l => `<dt>${esc(l.label)}</dt><dd${cjk(l.value)}>${esc(l.value)}</dd><button class="cp" type="button" data-copy="${esc(l.value)}" aria-label="Copy ${esc(l.label)}">Copy</button>`).join("")}</dl>${note}</article>`;
   }).join("");
@@ -289,33 +352,57 @@ function stageIndex(s){
   [s.status, ...s.events.map(e => e.status)].forEach(x => { const i = MILESTONES.findIndex(m => m.match.includes(x)); if (i > best) best = i; });
   return best;
 }
+let payFilter = "all";
+const money = (n, cur) => cur === "TZS" ? "TSh " + Math.round(n).toLocaleString("en-US") : "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const sumBy = (list, cur) => list.filter(s => s.charge_amount != null && (s.charge_currency || "USD") === cur).reduce((t, s) => t + Number(s.charge_amount), 0);
+function moneyLine(list){
+  const parts = ["USD","TZS"].map(c => [c, sumBy(list, c)]).filter(([,v]) => v > 0).map(([c,v]) => money(v, c));
+  return parts.length ? parts.join(" + ") : "–";
+}
+function payPill(s){
+  if (s.paid) return `<span class="pill pay-paid">Paid</span>`;
+  if (s.charge_amount == null) return `<span class="pill pay-wait">Unpaid · charges pending</span>`;
+  return `<span class="pill pay-unpaid">Unpaid</span>`;
+}
 function renderPackages(){
   const list = me.packages || [];
-  const counts = { all: list.length, move: 0, hold: 0, done: 0 };
-  list.forEach(s => counts[group(s.status)]++);
-  const stats = [["all","All packages",""],["move","On the way","move"],["hold","On hold","hold"],["done","Delivered","done"]];
-  $("stats").innerHTML = stats.map(([k,l,c]) => `<button class="stat ${c} ${filter===k?"on":""}" data-f="${k}" aria-pressed="${filter===k}"><span class="n">${counts[k]}</span><span class="l">${l}</span></button>`).join("");
+  const paid = list.filter(s => s.paid), unpaid = list.filter(s => !s.paid);
+  $("nAll").textContent = list.length; $("nPaid").textContent = paid.length; $("nUnpaid").textContent = unpaid.length;
+  document.querySelectorAll("#payBar [data-pay]").forEach(b => b.setAttribute("aria-selected", b.dataset.pay === payFilter));
+  const pending = unpaid.filter(s => s.charge_amount == null).length;
+  $("stats").innerHTML = `
+    <div class="stat static hold"><span class="n">${moneyLine(unpaid)}</span><span class="l">To pay${pending ? ` · ${pending} awaiting charges` : ""}</span></div>
+    <div class="stat static done"><span class="n">${moneyLine(paid)}</span><span class="l">Paid</span></div>
+    <div class="stat static"><span class="n">${list.length}</span><span class="l">Packages</span></div>`;
   $("fresh").textContent = "Updated " + new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   if (!list.length) {
     $("ships").innerHTML = `<div class="empty">No packages yet. When a parcel you ordered to your JustBuy address arrives at our warehouse, we add it here and you can follow every update.</div>`;
     return;
   }
   const q = $("q").value.trim().toLowerCase();
-  const rows = list.filter(s => (filter === "all" || group(s.status) === filter) &&
+  const rows = list.filter(s => (payFilter === "all" || (payFilter === "paid" ? s.paid : !s.paid)) &&
     (!q || [s.tracking_no, s.description].some(v => (v || "").toLowerCase().includes(q))));
-  if (!rows.length) { $("ships").innerHTML = `<div class="empty">No packages match.</div>`; return; }
+  if (!rows.length) { $("ships").innerHTML = `<div class="empty">${payFilter === "paid" ? "No paid packages yet." : payFilter === "unpaid" ? "Nothing to pay. All your packages are paid." : "No packages match."}</div>`; return; }
   $("ships").innerHTML = rows.map(s => {
     const g = group(s.status), cur = stageIndex(s), delivered = s.status === "Delivered";
-    const facts = [["Contents",s.description],["From",s.origin],["To",s.destination],["Pieces",s.pieces],["Weight",s.weight_kg!=null?`${Number(s.weight_kg)} kg`:null],["Expected arrival",s.eta?fmtD(s.eta):null]].filter(f => f[1]!=null && f[1]!=="");
+    const facts = [["Contents",s.description],["From",s.origin],["To",s.destination],["Pieces",s.pieces],["Weight",s.weight_kg!=null?`${Number(s.weight_kg)} kg`:null],["Shipping method",s.shipping_method_name],["Expected arrival",s.eta?fmtD(s.eta):null]].filter(f => f[1]!=null && f[1]!=="");
+    const amount = s.charge_amount != null ? money(s.charge_amount, s.charge_currency || "USD") : null;
+    const charges = `<div class="charges ${s.paid ? "is-paid" : ""}">
+        <div><span class="k">Shipping charges</span><span class="v">${amount || "Being calculated"}</span></div>
+        <div><span class="k">Payment</span><span class="v">${s.paid ? "Paid" + (s.paid_at ? " on " + fmtShort(s.paid_at) : "") : amount ? "Not paid yet" : "We'll add the amount soon"}</span></div>
+        ${s.charge_note ? `<div class="wide"><span class="k">Breakdown</span><span class="v">${esc(s.charge_note)}</span></div>` : ""}
+      </div>`;
     return `<details class="ship" data-tn="${esc(s.tracking_no)}">
       <summary>
         <span class="tn">${esc(s.tracking_no)}</span><span class="pill ${g}">${esc(s.status)}</span>
         <span class="ds">${esc(s.description || "Package")}</span><span class="when">${s.eta && !delivered ? "ETA " + fmtShort(s.eta+"T12:00:00") : "Updated " + fmtShort(s.updated_at)}</span>
+        <span class="ds pay">${amount ? `<b>${amount}</b>` : ""}</span><span class="when">${payPill(s)}</span>
       </summary>
       <div class="body">
         <ol class="steps ${delivered?"complete":""}" aria-label="Progress">
           ${MILESTONES.map((m,i) => `<li class="${i<cur||delivered?"done":i===cur?"cur":""}"><div class="dot"></div><span>${esc(m.label)}</span></li>`).join("")}
         </ol>
+        ${charges}
         ${facts.length ? `<div class="facts">${facts.map(f => `<div><span class="k">${esc(f[0])}</span><span class="v">${esc(f[1])}</span></div>`).join("")}</div>` : ""}
         ${s.customer_note ? `<div class="note">${esc(s.customer_note)}</div>` : ""}
         ${s.events.length ? `<ol class="tl">${s.events.map(e => `<li><div class="s">${esc(e.status)}</div><div class="m">${fmtDT(e.happened_at)}${e.location?" · "+esc(e.location):""}</div>${e.note?`<div class="x">${esc(e.note)}</div>`:""}</li>`).join("")}</ol>` : ""}
@@ -323,7 +410,8 @@ function renderPackages(){
     </details>`;
   }).join("");
 }
-$("stats").onclick = e => { const b = e.target.closest("[data-f]"); if (b) { filter = b.dataset.f; renderPackages(); } };
+$("payBar").onclick = e => { const b = e.target.closest("[data-pay]"); if (b) { payFilter = b.dataset.pay; renderPackages(); } };
+
 $("q").oninput = () => renderPackages();
 
 /* ---------- Profile ---------- */

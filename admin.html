@@ -139,6 +139,9 @@ h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .inline-form label{flex:1 1 120px}
 .pill.c-req{background:var(--pill-bg);color:var(--pill-fg)} .pill.c-found{background:var(--ok-bg);color:var(--ok)}
 .pill.c-shipped{background:var(--brand-bg);color:var(--brand-dark)} .pill.c-rejected{background:var(--pill-bg);color:var(--muted)}
+h3 .opt{font-weight:400;color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0;margin-left:6px}
+.charge-card{border-color:var(--warn-bg)}
+.charge-card.is-paid{border-color:var(--ok-bg)}
 .clickname{border:0;background:none;padding:0;color:var(--brand);font-weight:800;cursor:pointer;text-align:left;font-size:14px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -334,7 +337,7 @@ async function route(session){
     await sb.auth.signOut(); return;
   }
   $("whoEmail").textContent = session.user.email;
-  show("app"); await loadCompanies(); loadList(); loadClaimsWaiting();
+  show("app"); await loadCompanies(); loadMethodsAdmin(); loadList(); loadClaimsWaiting();
 }
 function show(which){
   $("login").classList.toggle("hidden", which!=="login");
@@ -345,7 +348,7 @@ function show(which){
 /* ---------- List ---------- */
 async function loadList(){
   if (companies.length && !$("compView").classList.contains("hidden")) loadCompanies();
-  const { data, error } = await sb.from("shipments").select("id,tracking_no,customer_name,status,updated_at").order("updated_at",{ascending:false}).limit(1000);
+  const { data, error } = await sb.from("shipments").select("id,tracking_no,customer_name,status,updated_at,paid,charge_amount,charge_currency").order("updated_at",{ascending:false}).limit(1000);
   if (error) { $("list").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
   shipments = data; renderList();
 }
@@ -356,7 +359,7 @@ function renderList(){
     <button class="item ${s.id===selectedId?"sel":""}" data-id="${s.id}">
       <span class="tn">${esc(s.tracking_no)}</span><span class="pill ${pillClass(s.status)}">${esc(s.status)}</span>
       <span class="cu">${esc(s.customer_name)}</span>
-      <span class="dt">Updated ${fmtDT(s.updated_at)}</span>
+      <span class="dt">Updated ${fmtDT(s.updated_at)} · ${s.paid ? '<b style="color:var(--ok)">Paid</b>' : s.charge_amount != null ? `<b style="color:var(--warn)">Unpaid ${s.charge_currency === "TZS" ? "TSh " + Math.round(s.charge_amount).toLocaleString("en-US") : "$" + Number(s.charge_amount).toFixed(2)}</b>` : "No charges yet"}</span>
     </button>`).join("") : `<div class="empty">${shipments.length ? "No shipments match." : "No shipments yet. Create your first one."}</div>`;
 }
 $("search").oninput = renderList; $("filter").onchange = renderList;
@@ -468,6 +471,26 @@ async function openShipment(id){
     ${facts.length?`<p class="meta" style="margin:0 0 4px;color:var(--muted);font-size:14px">${facts.map(f=>`${esc(f[0])}: <b style="color:var(--fg)">${esc(f[1])}</b>`).join(" &nbsp;·&nbsp; ")}</p>`:""}
     ${s.internal_note?`<p style="font-size:13px;color:var(--muted);margin:6px 0 0">Internal: ${esc(s.internal_note)}</p>`:""}
 
+    <section class="card charge-card ${s.paid ? "is-paid" : ""}" style="margin-top:16px">
+      <div class="detail-head" style="margin-bottom:10px"><h3 style="margin:0">Charges &amp; payment <span class="opt">customer sees this</span></h3>
+        <span class="pill ${s.paid ? "s-done" : "s-hold"}">${s.paid ? "Paid" + (s.paid_at ? " · " + fmtD(s.paid_at.slice(0,10)) : "") : "Unpaid"}</span></div>
+      <form id="chForm">
+        <div class="grid g3">
+          <label>Shipping method<select id="chMethod"><option value="">Not set</option>${(window.METHODS||[]).map(m=>`<option value="${esc(m.id)}" ${m.id===s.shipping_method?"selected":""}>${esc(m.name)}</option>`).join("")}</select></label>
+          <label>High-value items <span class="opt">phones, laptops…</span><input id="chHv" type="number" min="0" step="1" value="0"></label>
+          <label>&nbsp;<button type="button" class="btn" id="chSuggest">Suggest from weight</button></label>
+        </div>
+        <div class="grid g3" style="margin-top:12px">
+          <label>Amount<input id="chAmount" type="number" min="0" step="0.01" value="${s.charge_amount ?? ""}"></label>
+          <label>Currency<select id="chCur"><option ${s.charge_currency!=="TZS"?"selected":""}>USD</option><option ${s.charge_currency==="TZS"?"selected":""}>TZS</option></select></label>
+          <label class="check" style="align-self:end;min-height:40px"><input id="chPaid" type="checkbox" ${s.paid?"checked":""}> Paid</label>
+        </div>
+        <label style="margin-top:12px">Breakdown for customer <span class="opt">optional</span><input id="chNote" value="${esc(s.charge_note || "")}" placeholder="e.g. 2.5 kg × USD 12/kg + 1 phone surcharge USD 20"></label>
+        <div class="row-end"><button class="btn primary" id="chSave" type="submit">Save charges</button></div>
+        <div id="chMsg"></div>
+      </form>
+    </section>
+
     <section class="card" style="background:var(--soft);margin-top:16px">
       <h3>Add status update</h3>
       <form id="evForm">
@@ -499,6 +522,30 @@ async function openShipment(id){
     </section>`;
 
   $("editBtn").onclick = () => renderForm(s);
+  $("chSuggest").onclick = () => {
+    const m = (window.METHODS||[]).find(x => x.id === $("chMethod").value);
+    if (!m) { msg("chMsg", "Choose the shipping method first."); return; }
+    if (s.weight_kg == null) { msg("chMsg", "Add the weight under Edit details first."); return; }
+    const kg = Number(s.weight_kg), tier = (m.tiers||[]).find(t => kg >= t.min_kg && (t.max_kg == null || kg < t.max_kg)) || m.tiers[m.tiers.length-1];
+    const hv = Math.max(0, parseInt($("chHv").value || "0", 10)), sur = (window.SURCHARGE || 0) * hv;
+    const total = Math.round((kg * tier.usd_per_kg + sur) * 100) / 100;
+    $("chAmount").value = total; $("chCur").value = "USD";
+    $("chNote").value = `${kg} kg × USD ${tier.usd_per_kg}/kg (${m.name})` + (hv ? ` + ${hv} high-value item${hv>1?"s":""} × USD ${window.SURCHARGE}` : "");
+    msg("chMsg", "Suggested from the weight. Check it, then Save charges.", "ok");
+  };
+  $("chForm").onsubmit = async e => {
+    e.preventDefault();
+    const amt = $("chAmount").value.trim();
+    $("chSave").disabled = true;
+    const { error } = await sb.from("shipments").update({
+      shipping_method: $("chMethod").value || null,
+      charge_amount: amt === "" ? null : Number(amt), charge_currency: $("chCur").value,
+      charge_note: $("chNote").value.trim() || null, paid: $("chPaid").checked
+    }).eq("id", s.id);
+    $("chSave").disabled = false;
+    if (error) { msg("chMsg", error.message); return; }
+    await loadList(); openShipment(s.id);
+  };
   $("copyBtn").onclick = async () => {
     try { await navigator.clipboard.writeText(shareText); $("copyBtn").textContent = "Copied"; }
     catch { const r = document.createRange(); r.selectNodeContents($("shareText")); getSelection().removeAllRanges(); getSelection().addRange(r); $("copyBtn").textContent = "Selected — press Ctrl+C"; }
@@ -806,6 +853,7 @@ function claimRow(c){
   return `<div class="crow" data-claim="${c.id}">
     <div class="top"><span><span class="mono">${esc(c.supplier_tracking)}</span>${c.description ? ` <span class="meta">· ${esc(c.description)}</span>` : ""}</span><span class="pill ${cls}">${label}</span></div>
     <div class="meta">Claimed ${fmtDT(c.created_at)}${c.found_at ? " · found " + fmtDT(c.found_at) : ""}${c.admin_note ? " · " + esc(c.admin_note) : ""}</div>
+    <div class="meta">Shipping method: <b style="color:var(--fg)">${esc(((window.METHODS||[]).find(m => m.id === c.shipping_method) || {}).name || "not chosen")}</b></div>
     ${box}
     ${dup.length ? `<div class="warnline">Also claimed by ${dup.map(o => esc(o.registrations?.full_name || "") + " (" + esc(o.registrations?.customer_no || "") + ")").join(", ")}. Check who it belongs to.</div>` : ""}
     <div class="acts">${acts}</div><div data-slot></div>
@@ -858,13 +906,22 @@ $("custView").addEventListener("click", async e => {
     const { data: sh, error } = await sb.from("shipments").insert({
       tracking_no: newTrackingNo(), registration_id: cust.r.id, description: w.description || c.description || null,
       pieces: w.pieces, weight_kg: w.weight_kg, origin, destination: "Dar es Salaam",
-      internal_note: `Supplier tracking ${c.supplier_tracking}` }).select("id,tracking_no").single();
+      internal_note: `Supplier tracking ${c.supplier_tracking}`, shipping_method: c.shipping_method || null }).select("id,tracking_no").single();
     if (error) { mk.disabled = false; mk.textContent = "Create JustBuy package"; slot.innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
     await sb.from("shipment_events").insert({ shipment_id: sh.id, status: "At origin warehouse", location: origin, note: `Received at our warehouse (supplier tracking ${c.supplier_tracking})`, happened_at: w.received_at });
     await sb.from("package_claims").update({ status: "shipped", shipment_id: sh.id }).eq("id", c.id);
     loadList(); openCustomer(cust.r.id, "claims");
   }
 });
+
+/* ---------- Shipping methods for charges ---------- */
+async function loadMethodsAdmin(){
+  const [{ data: m }, { data: st }] = await Promise.all([
+    sb.from("shipping_methods").select("*").order("sort"),
+    sb.from("shipping_settings").select("value").eq("key","cn_high_value_surcharge_usd_per_item").maybeSingle()
+  ]);
+  window.METHODS = m || []; window.SURCHARGE = st ? Number(st.value) : 0;
+}
 </script>
 </body>
 </html>
